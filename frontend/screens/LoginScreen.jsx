@@ -92,7 +92,7 @@ const LoginScreen = ({ setIsLoggedIn }) => {
         <View style={styles.contentContainer}>
           {/* Back Button */}
           <TouchableOpacity
-            onPress={() => navigation.goBack()}
+            onPress={() => navigation.replace("Start")}
             style={styles.backButton}
           >
             <Ionicons name="arrow-back" size={24} color={THEME.colors.text} />
