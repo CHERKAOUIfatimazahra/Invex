@@ -39,7 +39,7 @@ const App = () => {
       <Stack.Navigator
         initialRouteName="Start"
         screenOptions={{
-          headerShown: false, // This will hide the header for all screens
+          headerShown: false,
         }}
       >
         <Stack.Screen name="Start" component={StartScreen} />
