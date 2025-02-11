@@ -50,12 +50,19 @@ const App = () => {
         <Stack.Screen name="Login">
           {(props) => <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
         </Stack.Screen>
-        <Stack.Screen name="MainDashboard" component={MainDashboardScreen} />
-        <Stack.Screen name="Scan" component={ScanScreen} />
-        <Stack.Screen name="Products" component={ProductsScreen} />
-        <Stack.Screen name="Statistics" component={StatisticsScreen} />
-        <Stack.Screen name="PDF" component={PDFScreen} />
 
+        {isLoggedIn && (
+          <>
+            <Stack.Screen
+              name="MainDashboardScreen"
+              component={MainDashboardScreen}
+            />
+            <Stack.Screen name="Scan" component={ScanScreen} />
+            <Stack.Screen name="Products" component={ProductsScreen} />
+            <Stack.Screen name="Statistics" component={StatisticsScreen} />
+            <Stack.Screen name="PDF" component={PDFScreen} />
+          </>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
