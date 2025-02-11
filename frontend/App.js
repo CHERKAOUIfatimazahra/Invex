@@ -4,6 +4,10 @@ import { createStackNavigator } from "@react-navigation/stack";
 import StartScreen from "./screens/StartScreen";
 import LoginScreen from "./screens/LoginScreen";
 import MainDashboardScreen from "./screens/MainDashboardScreen";
+import ScanScreen from "./screens/ScanScreen";
+import ProductsScreen from "./screens/ProductsScreen";
+import StatisticsScreen from "./screens/StatisticsScreen";
+import PDFScreen from "./screens/PDFScreen";
 
 const Stack = createStackNavigator();
 
@@ -47,6 +51,11 @@ const App = () => {
           {(props) => <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
         </Stack.Screen>
         <Stack.Screen name="MainDashboard" component={MainDashboardScreen} />
+        <Stack.Screen name="Scan" component={ScanScreen} />
+        <Stack.Screen name="Products" component={ProductsScreen} />
+        <Stack.Screen name="Statistics" component={StatisticsScreen} />
+        <Stack.Screen name="PDF" component={PDFScreen} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );
