@@ -58,10 +58,10 @@ const LoginScreen = ({ setIsLoggedIn }) => {
 
     setIsLoading(true);
     try {
-      const response = await axios(
-        `http://172.16.9.161:3000/warehousemans?secretKey=${code}`
-      );
-      const data = await response.json();
+      const response = await axios.get(
+      `http://172.16.9.161:3000/warehousemans?secretKey=${code}`
+    );
+    const data = response.data;
 
       if (data.length > 0) {
         // Stocke l'utilisateur dans AsyncStorage
@@ -72,10 +72,7 @@ const LoginScreen = ({ setIsLoggedIn }) => {
         Alert.alert("Erreur", "Clé secrète incorrecte. Réessayez.");
       }
     } catch (error) {
-      Alert.alert(
-        "Erreur",
-        "Impossible de se connecter. Vérifiez votre connexion."
-      );
+      console.error("Login error:", error);
     } finally {
       setIsLoading(false);
     }

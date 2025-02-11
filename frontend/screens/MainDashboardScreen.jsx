@@ -61,10 +61,7 @@ const MainDashboardScreen = () => {
         onPress: async () => {
           try {
             await AsyncStorage.clear();
-            navigation.reset({
-              index: 0,
-              routes: [{ name: "Login" }],
-            });
+            navigation.navigate("Login");
           } catch (error) {
             console.error("Logout error:", error);
             Alert.alert(
@@ -219,7 +216,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  
+
   welcomeText: {
     fontSize: 20,
     color: THEME.colors.gray,
@@ -246,7 +243,6 @@ const styles = StyleSheet.create({
     alignContent: "center",
     gap: 16,
     paddingHorizontal: 16,
-    marginTop: -150,
   },
   buttonContainer: {
     width: BUTTON_SIZE,
