@@ -33,19 +33,6 @@ const LoginScreen = ({ setIsLoggedIn }) => {
   const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    checkLoginStatus();
-  }, []);
-
-  // Vérifie si l'utilisateur est déjà connecté
-  const checkLoginStatus = async () => {
-    const storedUser = await AsyncStorage.getItem("userToken");
-    if (storedUser) {
-      setIsLoggedIn(true);
-      navigation.replace("MainDashboard");
-    }
-  };
-
   // Fonction de connexion
   const handleLogin = async () => {
     if (code.length < 4) {
