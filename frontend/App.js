@@ -54,7 +54,7 @@ const App = () => {
         {isLoggedIn && (
           <>
             <Stack.Screen
-              name="MainDashboardScreen"
+              name="MainDashboard"
               component={MainDashboardScreen}
             />
             <Stack.Screen name="Scan" component={ScanScreen} />
