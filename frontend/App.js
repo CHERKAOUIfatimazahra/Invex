@@ -8,6 +8,8 @@ import ScanScreen from "./screens/ScanScreen";
 import ProductsScreen from "./screens/ProductsScreen";
 import StatisticsScreen from "./screens/StatisticsScreen";
 import PDFScreen from "./screens/PDFScreen";
+import ProductDetailScreen from "./screens/ProductDetailScreen";
+import AddProductScreen from "./screens/AddProductScreen";
 
 const Stack = createStackNavigator();
 
@@ -61,6 +63,8 @@ const App = () => {
             <Stack.Screen name="Products" component={ProductsScreen} />
             <Stack.Screen name="Statistics" component={StatisticsScreen} />
             <Stack.Screen name="PDF" component={PDFScreen} />
+            <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
+            <Stack.Screen name="AddProduct" component={AddProductScreen} />
           </>
         )}
       </Stack.Navigator>
