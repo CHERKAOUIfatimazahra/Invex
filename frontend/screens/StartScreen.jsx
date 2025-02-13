@@ -27,7 +27,7 @@ const StartScreen = () => {
 
   return (
     <ImageBackground
-      source={require("../assets/background.jpg")}
+      source={require("../assets/Invex-removebg-preview.png")}
       style={styles.container}
     >
       <View style={styles.darkOverlay} />
