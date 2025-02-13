@@ -1,4 +1,4 @@
-import React, { useState , useContext } from "react";
+import React, { useState, useContext } from "react";
 import {
   View,
   Text,
@@ -9,31 +9,45 @@ import {
   ActivityIndicator,
   Alert,
   TextInput,
-  ImageBackground,
+  Dimensions,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import axios from "axios";
 import { WarehouseContext } from "../Context/WarehouseContext";
 
+const { width } = Dimensions.get("window");
+
 const THEME = {
   colors: {
-    primary: "#8DE8CF",
-    secondary: "#B7F5AA",
-    text: "#FFFFFF",
-    textLight: "rgba(255, 255, 255, 0.8)",
-    white: "#FFFFFF",
-    shadow: "rgba(0, 0, 0, 0.6)",
+    primary: "#7B61FF",
+    secondary: "#9C8FFF",
+    scanner: "#FF6B6B",
+    products: "#4facfe",
+    statistics: "#7B61FF",
+    reports: "#43E97B",
+    background: "#F8FAFF",
+    surface: "#FFFFFF",
+    text: "#2D3748",
+    textLight: "#FFFFFF",
+    gray: "#A0AEC0",
+    border: "#E2E8F0",
     error: "#FF6B6B",
     warning: "#FFB036",
     success: "#4CD964",
+  },
+  gradients: {
+    header: ["#7B61FF", "#9C8FFF"],
+    content: ["rgba(123, 97, 255, 0.1)", "rgba(156, 143, 255, 0.1)"],
   },
 };
 
 const ProductDetailScreen = ({ route }) => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const { product } = route.params;
   const [currentProduct, setCurrentProduct] = useState(product);
   const [loading, setLoading] = useState(false);
@@ -80,29 +94,39 @@ const ProductDetailScreen = ({ route }) => {
   };
 
   return (
-    <ImageBackground
-      source={require("../assets/Invex__1_-removebg-preview.png")}
-      style={styles.container}
-    >
-      <View style={styles.darkOverlay} />
-      <LinearGradient
-        colors={["rgba(141, 232, 207, 0.3)", "rgba(183, 245, 170, 0.4)"]}
-        style={styles.gradient}
-      >
-        <StatusBar style="light" />
-        <ScrollView style={styles.scrollView}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="arrow-back" size={24} color={THEME.colors.white} />
-          </TouchableOpacity>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <StatusBar style="light" />
 
-          <Image
-            source={{ uri: currentProduct.image }}
-            style={styles.productImage}
+      {/* Header */}
+      <LinearGradient colors={THEME.gradients.header} style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons
+            name="arrow-back"
+            size={24}
+            color={THEME.colors.textLight}
           />
-          <Text style={styles.title}>{currentProduct.name}</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Détails du produit</Text>
+      </LinearGradient>
+
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.productCard}>
+          {currentProduct.imageUrl ? (
+            <Image
+              source={{ uri: currentProduct.imageUrl }}
+              style={styles.productImage}
+            />
+          ) : (
+            <Image
+              source={require("../assets/Invex__1_-removebg-preview.png")}
+              style={styles.productImage}
+            />
+          )}
+
+          <Text style={styles.productName}>{currentProduct.name}</Text>
 
           <View style={styles.detailsContainer}>
             <DetailItem
@@ -121,100 +145,155 @@ const ProductDetailScreen = ({ route }) => {
               value={currentProduct.supplier}
             />
           </View>
-          <Text style={styles.subtitle}>Stocks disponibles</Text>
-          {Array.isArray(currentProduct.stocks) &&
-          currentProduct.stocks.length > 0 ? (
-            currentProduct.stocks.map((stock) => (
-              <View key={stock.id} style={styles.stockItem}>
-                <Text style={styles.stockName}>stock : {stock.name}</Text>
-                <Text style={styles.stockLocation}>
-                  localisation : {`${stock.localisation.city}`}
-                </Text>
+        </View>
 
-                <Text
-                  style={[
-                    styles.stockQuantity,
-                    { color: getStockStatusColor(stock.quantity) },
-                  ]}
-                >
-                  Quantité: {stock.quantity}
-                </Text>
+        <Text style={styles.sectionTitle}>Stocks disponibles</Text>
 
-                <TextInput
-                  style={styles.input}
-                  keyboardType="numeric"
-                  placeholder="Entrez une quantité"
-                  placeholderTextColor={THEME.colors.textLight}
-                  value={quantities[stock.id] || ""}
-                  onChangeText={(text) =>
-                    setQuantities((prev) => ({ ...prev, [stock.id]: text }))
+        {Array.isArray(currentProduct.stocks) &&
+        currentProduct.stocks.length > 0 ? (
+          currentProduct.stocks.map((stock) => (
+            <View key={stock.id} style={styles.stockCard}>
+              <Text style={styles.stockName}>{stock.name}</Text>
+              <Text style={styles.stockLocation}>
+                {stock.localisation.city}
+              </Text>
+              <Text
+                style={[
+                  styles.stockQuantity,
+                  { color: getStockStatusColor(stock.quantity) },
+                ]}
+              >
+                Quantité: {stock.quantity}
+              </Text>
+
+              <TextInput
+                style={styles.input}
+                keyboardType="numeric"
+                placeholder="Quantité à modifier"
+                placeholderTextColor={THEME.colors.gray}
+                value={quantities[stock.id] || ""}
+                onChangeText={(text) =>
+                  setQuantities((prev) => ({ ...prev, [stock.id]: text }))
+                }
+              />
+
+              <View style={styles.buttonGroup}>
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.addButton]}
+                  onPress={() =>
+                    updateStockQuantity(
+                      stock.id,
+                      Number(quantities[stock.id] || 0)
+                    )
                   }
-                />
+                  disabled={loading}
+                >
+                  <Ionicons
+                    name="add-outline"
+                    size={20}
+                    color={THEME.colors.textLight}
+                  />
+                  <Text style={styles.buttonText}>Ajouter</Text>
+                </TouchableOpacity>
 
-                <View style={styles.buttonGroup}>
-                  <TouchableOpacity
-                    style={[styles.actionButton, styles.addButton]}
-                    onPress={() =>
-                      updateStockQuantity(
-                        stock.id,
-                        Number(quantities[stock.id] || 0)
-                      )
-                    }
-                    disabled={loading}
-                  >
-                    <Ionicons
-                      name="add-outline"
-                      size={20}
-                      color={THEME.colors.text}
-                    />
-                    <Text style={styles.buttonText}>Réapprovisionner</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.actionButton, styles.removeButton]}
-                    onPress={() =>
-                      updateStockQuantity(
-                        stock.id,
-                        -Number(quantities[stock.id] || 0)
-                      )
-                    }
-                    disabled={loading}
-                  >
-                    <Ionicons
-                      name="remove-outline"
-                      size={20}
-                      color={THEME.colors.text}
-                    />
-                    <Text style={styles.buttonText}>Décharger</Text>
-                  </TouchableOpacity>
-                </View>
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.removeButton]}
+                  onPress={() =>
+                    updateStockQuantity(
+                      stock.id,
+                      -Number(quantities[stock.id] || 0)
+                    )
+                  }
+                  disabled={loading}
+                >
+                  <Ionicons
+                    name="remove-outline"
+                    size={20}
+                    color={THEME.colors.textLight}
+                  />
+                  <Text style={styles.buttonText}>Retirer</Text>
+                </TouchableOpacity>
               </View>
-            ))
-          ) : (
-            <Text style={styles.noStock}>Aucun stock disponible.</Text>
-          )}
+            </View>
+          ))
+        ) : (
+          <Text style={styles.noStock}>Aucun stock disponible.</Text>
+        )}
 
-          {loading && (
-            <ActivityIndicator
-              size="large"
-              color={THEME.colors.primary}
-              style={styles.loader}
-            />
-          )}
-        </ScrollView>
-      </LinearGradient>
-    </ImageBackground>
+        {loading && (
+          <ActivityIndicator
+            size="large"
+            color={THEME.colors.primary}
+            style={styles.loader}
+          />
+        )}
+      </ScrollView>
+
+      {/* Bottom Navigation */}
+      <View style={[styles.bottomNav, { paddingBottom: insets.bottom }]}>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate("Scan")}
+        >
+          <Ionicons
+            name="barcode-outline"
+            size={24}
+            color={THEME.colors.scanner}
+          />
+          <Text style={[styles.navText, { color: THEME.colors.scanner }]}>
+            Scanner
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate("Products")}
+        >
+          <Ionicons
+            name="cube-outline"
+            size={24}
+            color={THEME.colors.products}
+          />
+          <Text style={[styles.navText, { color: THEME.colors.products }]}>
+            Produits
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate("Statistics")}
+        >
+          <Ionicons
+            name="stats-chart-outline"
+            size={24}
+            color={THEME.colors.statistics}
+          />
+          <Text style={[styles.navText, { color: THEME.colors.statistics }]}>
+            Stats
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate("PDF")}
+        >
+          <Ionicons
+            name="document-text-outline"
+            size={24}
+            color={THEME.colors.reports}
+          />
+          <Text style={[styles.navText, { color: THEME.colors.reports }]}>
+            Rapports
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 };
 
 const DetailItem = ({ icon, label, value }) => (
   <View style={styles.detailItem}>
-    <Ionicons
-      name={icon}
-      size={24}
-      color={THEME.colors.white}
-      style={styles.detailIcon}
-    />
+    <Ionicons name={icon} size={24} color={THEME.colors.primary} />
     <View style={styles.detailContent}>
       <Text style={styles.detailLabel}>{label}</Text>
       <Text style={styles.detailValue}>{value}</Text>
@@ -225,113 +304,111 @@ const DetailItem = ({ icon, label, value }) => (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: THEME.colors.background,
   },
-  darkOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: THEME.colors.shadow,
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    paddingTop: 20,
   },
-  gradient: {
-    flex: 1,
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: THEME.colors.textLight,
+    marginLeft: 16,
+  },
+  backButton: {
+    padding: 8,
   },
   scrollView: {
     flex: 1,
-      paddingHorizontal: 20,
   },
-  backButton: {
-    position: "absolute",
-    top: 80,
-    left: 20,
-    zIndex: 1,
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
+  productCard: {
+    backgroundColor: THEME.colors.surface,
+    borderRadius: 16,
+    margin: 16,
+    padding: 16,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
   },
   productImage: {
     width: "100%",
-    height: 100,
-    borderRadius: 16,
-    marginTop: 0,
-    marginBottom: 20,
-    resizeMode: "cover",
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 16,
   },
-    title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: THEME.colors.white,
-    textAlign: "center",
-    textShadowColor: "rgba(0, 0, 0, 0.75)",
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-  },
-  subtitle: {
+  productName: {
     fontSize: 24,
-    fontWeight: "600",
-    color: THEME.colors.white,
-    marginTop: 30,
-    marginBottom: 20,
-    textShadowColor: "rgba(0, 0, 0, 0.75)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
+    fontWeight: "700",
+    color: THEME.colors.text,
+    marginBottom: 16,
   },
   detailsContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    borderRadius: 16,
-    padding: 16,
     gap: 16,
   },
   detailItem: {
     flexDirection: "row",
     alignItems: "center",
   },
-  detailIcon: {
-    marginRight: 12,
-    textShadowColor: "rgba(0, 0, 0, 0.75)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
-  },
   detailContent: {
+    marginLeft: 12,
     flex: 1,
   },
   detailLabel: {
     fontSize: 14,
-    color: THEME.colors.textLight,
-    marginBottom: 2,
+    color: THEME.colors.gray,
   },
   detailValue: {
-    fontSize: 18,
-    color: THEME.colors.white,
+    fontSize: 16,
+    color: THEME.colors.text,
     fontWeight: "500",
   },
-  stockItem: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-  },
-  stockName: {
+  sectionTitle: {
     fontSize: 20,
     fontWeight: "600",
-    color: THEME.colors.white,
-    marginBottom: 8,
+    color: THEME.colors.text,
+    margin: 16,
   },
-  stockQuantity: {
+  stockCard: {
+    backgroundColor: THEME.colors.surface,
+    borderRadius: 16,
+    margin: 16,
+    marginTop: 0,
+    padding: 16,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  stockName: {
     fontSize: 18,
-    fontWeight: "500",
+    fontWeight: "600",
+    color: THEME.colors.text,
     marginBottom: 8,
   },
   stockLocation: {
     fontSize: 16,
-    color: THEME.colors.textLight,
+    color: THEME.colors.gray,
+    marginBottom: 12,
+  },
+  stockQuantity: {
+    fontSize: 16,
+    fontWeight: "500",
     marginBottom: 16,
   },
   input: {
-    height: 50,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: THEME.colors.background,
     borderRadius: 12,
-    paddingHorizontal: 16,
+    padding: 16,
     fontSize: 16,
-    color: THEME.colors.white,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: THEME.colors.border,
   },
   buttonGroup: {
     flexDirection: "row",
@@ -353,18 +430,37 @@ const styles = StyleSheet.create({
     backgroundColor: THEME.colors.error,
   },
   buttonText: {
-    color: THEME.colors.text,
+    color: THEME.colors.textLight,
     fontSize: 16,
     fontWeight: "600",
   },
   noStock: {
-    fontSize: 18,
-    color: THEME.colors.textLight,
+    fontSize: 16,
+    color: THEME.colors.gray,
     textAlign: "center",
-    marginTop: 20,
+    margin: 16,
   },
   loader: {
     marginVertical: 20,
+  },
+  bottomNav: {
+    flexDirection: "row",
+    backgroundColor: THEME.colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: THEME.colors.border,
+    paddingTop: 12,
+    paddingHorizontal: 16,
+    justifyContent: "space-between",
+  },
+  navItem: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  navText: {
+    fontSize: 12,
+    marginTop: 4,
+    fontWeight: "500",
   },
 });
 
