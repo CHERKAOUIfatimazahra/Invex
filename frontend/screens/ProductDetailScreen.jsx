@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState , useContext } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
+import { WarehouseContext } from "../Context/WarehouseContext";
 
 const THEME = {
   colors: {
@@ -37,6 +38,7 @@ const ProductDetailScreen = ({ route }) => {
   const [currentProduct, setCurrentProduct] = useState(product);
   const [loading, setLoading] = useState(false);
   const [quantities, setQuantities] = useState({});
+  const { warehousemanId } = useContext(WarehouseContext);
 
   const getStockStatusColor = (quantity) => {
     if (quantity === 0) return THEME.colors.error;
@@ -62,7 +64,10 @@ const ProductDetailScreen = ({ route }) => {
 
       await axios.patch(
         `http://172.16.9.161:3000/products/${currentProduct.id}`,
-        { stocks: updatedStocks }
+        {
+          stocks: updatedStocks,
+          warehousemanId: warehousemanId,
+        }
       );
       setCurrentProduct((prev) => ({ ...prev, stocks: updatedStocks }));
       setQuantities((prev) => ({ ...prev, [stockId]: "" }));
@@ -108,12 +113,7 @@ const ProductDetailScreen = ({ route }) => {
             <DetailItem
               icon="pricetag-outline"
               label="Prix"
-              value={`$${currentProduct.price}`}
-            />
-            <DetailItem
-              icon="flash-outline"
-              label="Solde"
-              value={currentProduct.solde || "N/A"}
+              value={`${currentProduct.price} DH`}
             />
             <DetailItem
               icon="business-outline"
@@ -121,17 +121,20 @@ const ProductDetailScreen = ({ route }) => {
               value={currentProduct.supplier}
             />
           </View>
-
           <Text style={styles.subtitle}>Stocks disponibles</Text>
           {Array.isArray(currentProduct.stocks) &&
           currentProduct.stocks.length > 0 ? (
             currentProduct.stocks.map((stock) => (
               <View key={stock.id} style={styles.stockItem}>
-                
+                <Text style={styles.stockName}>stock : {stock.name}</Text>
+                <Text style={styles.stockLocation}>
+                  localisation : {`${stock.localisation.city}`}
+                </Text>
+
                 <Text
                   style={[
                     styles.stockQuantity,
-                            { color: getStockStatusColor(stock.quantity) },
+                    { color: getStockStatusColor(stock.quantity) },
                   ]}
                 >
                   Quantité: {stock.quantity}
