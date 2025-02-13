@@ -98,7 +98,7 @@
       "barcode": "8202230321234",
       "price": 9,
       "supplier": "Djkdidndjd",
-      "image": "./assets/images/Invex__1_-removebg-preview.png",
+      "image": null,
       "stocks": [
         {
           "id": 1999,
@@ -125,7 +125,7 @@
       "barcode": "6111259341234",
       "price": 3,
       "supplier": "Cygcyctc",
-      "image": "./assets/images/Invex__1_-removebg-preview.png",
+      "image": "https://www.doctinews.com/images/stories/ain_saiss_fin.jpg",
       "stocks": [
         {
           "id": 2991,
@@ -142,6 +142,34 @@
         {
           "warehousemanId": "1444",
           "at": "2025-02-13T10:22:08.266Z"
+        }
+      ],
+      "warehousemanId": "1444"
+    },
+    {
+      "id": "be02",
+      "name": "Jfodndkdo",
+      "type": "Type2",
+      "barcode": "6111035001673",
+      "price": 43,
+      "supplier": "Bdkdbdhdj",
+      "image": null,
+      "stocks": [
+        {
+          "id": 1999,
+          "name": "Gueliz B2",
+          "quantity": 103,
+          "localisation": {
+            "city": "Marrakesh",
+            "latitude": 31.628674,
+            "longitude": -7.992047
+          }
+        }
+      ],
+      "editedBy": [
+        {
+          "warehousemanId": "1444",
+          "at": "2025-02-13T15:17:58.848Z"
         }
       ],
       "warehousemanId": "1444"
