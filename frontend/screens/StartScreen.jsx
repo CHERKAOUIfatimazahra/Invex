@@ -33,10 +33,7 @@ const StartScreen = () => {
       <View style={styles.darkOverlay} />
 
       <LinearGradient
-        colors={[
-          "rgba(141, 232, 207, 0.3)",
-          "rgba(183, 245, 170, 0.4)",
-        ]}
+        colors={["rgba(141, 232, 207, 0.3)", "rgba(183, 245, 170, 0.4)"]}
         style={styles.gradient}
       >
         <StatusBar style="light" />
