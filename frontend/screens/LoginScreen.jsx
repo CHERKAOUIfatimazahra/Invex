@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
   Alert,
   StyleSheet,
 } from "react-native";
@@ -15,6 +13,7 @@ import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { WarehouseContext } from "../Context/WarehouseContext";
 
 const THEME = {
   colors: {
@@ -32,8 +31,10 @@ const LoginScreen = ({ setIsLoggedIn }) => {
   const navigation = useNavigation();
   const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { setWarehouseId } = useContext(WarehouseContext);
+  const { setWarehousemanId } = useContext(WarehouseContext);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Fonction de connexion
   const handleLogin = async () => {
     if (code.length < 4) {
       Alert.alert(
@@ -46,24 +47,36 @@ const LoginScreen = ({ setIsLoggedIn }) => {
     setIsLoading(true);
     try {
       const response = await axios.get(
-      `http://172.16.9.161:3000/warehousemans?secretKey=${code}`
-    );
-    const data = response.data;
+        `http://172.16.9.161:3000/warehousemans?secretKey=${code}`
+      );
+      const data = response.data;
 
       if (data.length > 0) {
-        // Stocke l'utilisateur dans AsyncStorage
-        await AsyncStorage.setItem("userToken", JSON.stringify(data[0]));
+        const user = data[0];
+
+        await AsyncStorage.setItem("userToken", JSON.stringify(user));
+
+        setWarehouseId(user.warehouseId);
+        setWarehousemanId(user.id);
+
         setIsLoggedIn(true);
-        navigation.replace("MainDashboard");
+        setIsAuthenticated(true);
       } else {
         Alert.alert("Erreur", "Clé secrète incorrecte. Réessayez.");
       }
     } catch (error) {
       console.error("Login error:", error);
+      Alert.alert("Erreur", "Une erreur s'est produite. Réessayez plus tard.");
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigation.replace("MainDashboard");
+    }
+  }, [isAuthenticated]);
 
   return (
     <LinearGradient
@@ -71,84 +84,70 @@ const LoginScreen = ({ setIsLoggedIn }) => {
       style={styles.container}
     >
       <StatusBar style="dark" />
+      <View style={styles.contentContainer}>
+        <TouchableOpacity
+          onPress={() => navigation.replace("Start")}
+          style={styles.backButton}
+        >
+          <Ionicons name="arrow-back" size={24} color={THEME.colors.text} />
+        </TouchableOpacity>
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardView}
-      >
-        <View style={styles.contentContainer}>
-          {/* Back Button */}
-          <TouchableOpacity
-            onPress={() => navigation.replace("Start")}
-            style={styles.backButton}
-          >
-            <Ionicons name="arrow-back" size={24} color={THEME.colors.text} />
-          </TouchableOpacity>
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Connexion</Text>
+            <Text style={styles.subtitle}>Entrez votre code secret</Text>
+          </View>
 
-          <View style={styles.content}>
-            {/* Header */}
-            <View style={styles.header}>
-              <Text style={styles.title}>Connexion</Text>
-              <Text style={styles.subtitle}>
-                Entrez votre code secret pour accéder à l'application
+          <View style={styles.form}>
+            <Text style={styles.label}>Code Secret</Text>
+            <View style={styles.inputContainer}>
+              <Ionicons
+                name="key-outline"
+                size={24}
+                color={THEME.colors.textLight}
+                style={styles.inputIcon}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Entrez votre code"
+                placeholderTextColor={THEME.colors.textLight}
+                value={code}
+                onChangeText={
+                  (text) => setCode(text.replace(/[^A-Z0-9]/gi, ""))
+                }
+                keyboardType="default"
+                autoCapitalize="characters"
+                secureTextEntry
+                maxLength={10}
+                autoFocus
+              />
+            </View>
+
+            <TouchableOpacity
+              onPress={handleLogin}
+              disabled={isLoading}
+              style={styles.loginButton}
+            >
+              <Text style={styles.buttonText}>
+                {isLoading ? "Connexion..." : "Se connecter"}
               </Text>
-            </View>
-
-            {/* Login Form */}
-            <View style={styles.form}>
-              <View>
-                <Text style={styles.label}>Code Secret</Text>
-                <View style={styles.inputContainer}>
-                  <Ionicons
-                    name="key-outline"
-                    size={24}
-                    color={THEME.colors.textLight}
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Entrez votre code"
-                    placeholderTextColor={THEME.colors.textLight}
-                    value={code}
-                    onChangeText={(text) =>
-                      setCode(text.replace(/[^A-Z0-9]/gi, ""))
-                    }
-                    keyboardType="default"
-                    autoCapitalize="characters"
-                    secureTextEntry
-                    maxLength={10}
-                    autoFocus
-                  />
-                </View>
-              </View>
-
-              <TouchableOpacity
-                onPress={handleLogin}
-                disabled={isLoading}
-                style={styles.loginButton}
-              >
-                <Text style={styles.buttonText}>
-                  {isLoading ? "Connexion..." : "Se connecter"}
-                </Text>
-                {!isLoading && (
-                  <Ionicons
-                    name="arrow-forward"
-                    size={24}
-                    color={THEME.colors.white}
-                  />
-                )}
-              </TouchableOpacity>
-            </View>
+              {!isLoading && (
+                <Ionicons
+                  name="arrow-forward"
+                  size={24}
+                  color={THEME.colors.white}
+                />
+              )}
+            </TouchableOpacity>
           </View>
         </View>
-      </KeyboardAvoidingView>
+      </View>
     </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  keyboardView: { flex: 1 },
   contentContainer: { flex: 1, marginTop: 60 },
   content: {
     flex: 1,
@@ -196,8 +195,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 12,
-    elevation: 8,
   },
   buttonText: { color: THEME.colors.white, fontSize: 18, fontWeight: "600" },
 });
