@@ -53,10 +53,6 @@ const MainDashboardScreen = () => {
   const handleLogout = async () => {
     Alert.alert("Déconnexion", "Êtes-vous sûr de vouloir vous déconnecter ?", [
       {
-        text: "Annuler",
-        style: "cancel",
-      },
-      {
         text: "Oui",
         onPress: async () => {
           try {
@@ -70,6 +66,10 @@ const MainDashboardScreen = () => {
             );
           }
         },
+      },
+      {
+        text: "Non",
+        style: "cancel",
       },
     ]);
   };
