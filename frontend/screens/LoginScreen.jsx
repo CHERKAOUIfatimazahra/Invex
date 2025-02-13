@@ -24,6 +24,7 @@ const THEME = {
     white: "#FFFFFF",
     inputBg: "#F7FAFC",
     border: "#E2E8F0",
+    error: "#E53E3E",
   },
 };
 
@@ -33,14 +34,12 @@ const LoginScreen = ({ setIsLoggedIn }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { setWarehouseId } = useContext(WarehouseContext);
   const { setWarehousemanId } = useContext(WarehouseContext);
+  const [errorMessage, setErrorMessage] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const handleLogin = async () => {
     if (code.length < 4) {
-      Alert.alert(
-        "Erreur",
-        "Le code secret doit contenir au moins 4 caractères"
-      );
+      setErrorMessage("Le code secret doit contenir au moins 4 caractères.");
       return;
     }
 
@@ -50,23 +49,18 @@ const LoginScreen = ({ setIsLoggedIn }) => {
         `http://172.16.9.161:3000/warehousemans?secretKey=${code}`
       );
       const data = response.data;
+      const user = data[0];
 
-      if (data.length > 0) {
-        const user = data[0];
+      await AsyncStorage.setItem("userToken", JSON.stringify(user));
 
-        await AsyncStorage.setItem("userToken", JSON.stringify(user));
+      setWarehouseId(user.warehouseId);
+      setWarehousemanId(user.id);
 
-        setWarehouseId(user.warehouseId);
-        setWarehousemanId(user.id);
-
-        setIsLoggedIn(true);
-        setIsAuthenticated(true);
-      } else {
-        Alert.alert("Erreur", "Clé secrète incorrecte. Réessayez.");
-      }
+      setIsLoggedIn(true);
+      setIsAuthenticated(true);
     } catch (error) {
-      console.error("Login error:", error);
-      Alert.alert("Erreur", "Une erreur s'est produite. Réessayez plus tard.");
+      // console.error("Login error:", error);
+      setErrorMessage("Le code secret est incorrect.");
     } finally {
       setIsLoading(false);
     }
@@ -112,8 +106,8 @@ const LoginScreen = ({ setIsLoggedIn }) => {
                 placeholder="Entrez votre code"
                 placeholderTextColor={THEME.colors.textLight}
                 value={code}
-                onChangeText={
-                  (text) => setCode(text.replace(/[^A-Z0-9]/gi, ""))
+                onChangeText={(text) =>
+                  setCode(text.replace(/[^A-Z0-9]/gi, ""))
                 }
                 keyboardType="default"
                 autoCapitalize="characters"
@@ -122,7 +116,9 @@ const LoginScreen = ({ setIsLoggedIn }) => {
                 autoFocus
               />
             </View>
-
+            {errorMessage ? (
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            ) : null}
             <TouchableOpacity
               onPress={handleLogin}
               disabled={isLoading}
@@ -197,6 +193,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   buttonText: { color: THEME.colors.white, fontSize: 18, fontWeight: "600" },
+  errorText: {
+    color: THEME.colors.error,
+    fontSize: 14,
+  },
 });
 
 export default LoginScreen;
