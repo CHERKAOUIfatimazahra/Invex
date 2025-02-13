@@ -1,20 +1,59 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import StartScreen from "./screens/StartScreen";
+import LoginScreen from "./screens/LoginScreen";
+import MainDashboardScreen from "./screens/MainDashboardScreen";
+import ScanScreen from "./screens/ScanScreen";
+import ProductsScreen from "./screens/ProductsScreen";
+import StatisticsScreen from "./screens/StatisticsScreen";
+import PDFScreen from "./screens/PDFScreen";
+import ProductDetailScreen from "./screens/ProductDetailScreen";
+import AddProductScreen from "./screens/AddProductScreen";
+import { WarehouseProvider } from "./Context/WarehouseContext";
 
-export default function App() {
+const Stack = createStackNavigator();
+
+const App = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+    <WarehouseProvider>
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName="Start"
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen name="Start" component={StartScreen} />
+          <Stack.Screen name="Login">
+            {(props) => (
+              <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />
+            )}
+          </Stack.Screen>
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+          {isLoggedIn && (
+            <>
+              <Stack.Screen
+                name="MainDashboard"
+                component={MainDashboardScreen}
+              />
+              <Stack.Screen name="Scan" component={ScanScreen} />
+              <Stack.Screen name="Products" component={ProductsScreen} />
+              <Stack.Screen name="Statistics" component={StatisticsScreen} />
+              <Stack.Screen name="PDF" component={PDFScreen} />
+              <Stack.Screen
+                name="ProductDetail"
+                component={ProductDetailScreen}
+              />
+              <Stack.Screen name="AddProduct" component={AddProductScreen} />
+            </>
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
+    </WarehouseProvider>
+  );
+};
+
+export default App;
