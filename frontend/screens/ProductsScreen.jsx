@@ -50,13 +50,27 @@ const ProductsScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchText, setSearchText] = useState("");
+  const [allProducts, setAllProducts] = useState([]);
+  const [sortOrder, setSortOrder] = useState({
+    price: "asc",
+    quantity: "asc",
+    name: "asc",
+  });
 
+  const getStockStatusColor = (quantity) => {
+    if (quantity <= 0) return THEME.colors.error;
+    if (quantity <= 10) return THEME.colors.warning;
+    return THEME.colors.success;
+  };
+
+  // fitch products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setError(null);
         const response = await axios.get("http://172.16.9.161:3000/products");
         setProducts(response.data);
+        setAllProducts(response.data);
       } catch (error) {
         setError("Erreur lors du chargement des produits");
         console.error("Erreur:", error);
@@ -67,26 +81,52 @@ const ProductsScreen = ({ navigation }) => {
     fetchProducts();
   }, []);
 
-  const getStockStatusColor = (quantity) => {
-    if (quantity <= 0) return THEME.colors.error;
-    if (quantity <= 10) return THEME.colors.warning;
-    return THEME.colors.success;
-  };
-
+  // seach products
   const filterProducts = (text) => {
     setSearchText(text);
-    const filteredProducts = products.filter((product) => {
-      const searchLower = text.toLowerCase();
-      return (
-        product.name?.toLowerCase().includes(searchLower) ||
-        product.type?.toLowerCase().includes(searchLower) ||
-        product.supplier?.toLowerCase().includes(searchLower) ||
-        product.price?.toString().includes(text)
-      );
-    });
-    setProducts(filteredProducts);
+    if (text === "") {
+      setProducts(allProducts);
+    } else {
+      const filteredProducts = allProducts.filter((product) => {
+        const searchLower = text.toLowerCase();
+        return (
+          product.name?.toLowerCase().includes(searchLower) ||
+          product.type?.toLowerCase().includes(searchLower) ||
+          product.supplier?.toLowerCase().includes(searchLower) ||
+          product.price?.toString().includes(text)
+        );
+      });
+      setProducts(filteredProducts);
+    }
+  };
+  // tri des produits
+  const getTotalQuantity = (product) => {
+    return (
+      product.stocks?.reduce((total, stock) => total + stock.quantity, 0) || 0
+    );
   };
 
+  const sortProducts = (key) => {
+    const order = sortOrder[key] === "asc" ? "desc" : "asc";
+
+    const sortedProducts = [...products].sort((a, b) => {
+      if (key === "name") {
+        return order === "asc"
+          ? a.name.localeCompare(b.name)
+          : b.name.localeCompare(a.name);
+      } else if (key === "quantity") {
+        return order === "asc"
+          ? getTotalQuantity(a) - getTotalQuantity(b)
+          : getTotalQuantity(b) - getTotalQuantity(a);
+      } else {
+        return order === "asc" ? a[key] - b[key] : b[key] - a[key];
+      }
+    });
+
+    setProducts(sortedProducts);
+    setSortOrder({ ...sortOrder, [key]: order });
+  };
+  // Générer un PDF
   const generatePDF = async () => {
     try {
       const htmlContent = `
@@ -105,11 +145,21 @@ const ProductsScreen = ({ navigation }) => {
                 .map(
                   (product) => `
                 <tr>
-                  <td style="border: 1px solid black; padding: 8px;">${product.name}</td>
-                  <td style="border: 1px solid black; padding: 8px;">${product.type}</td>
-                  <td style="border: 1px solid black; padding: 8px;">${product.price} DH</td>
-                  <td style="border: 1px solid black; padding: 8px;">${product.quantity}</td>
-                  <td style="border: 1px solid black; padding: 8px;">${product.supplier}</td>
+                  <td style="border: 1px solid black; padding: 8px;">${
+                    product.name
+                  }</td>
+                  <td style="border: 1px solid black; padding: 8px;">${
+                    product.type
+                  }</td>
+                  <td style="border: 1px solid black; padding: 8px;">${
+                    product.price
+                  } DH</td>
+                  <td style="border: 1px solid black; padding: 8px;">${getTotalQuantity(
+                    product
+                  )}</td>
+                  <td style="border: 1px solid black; padding: 8px;">${
+                    product.supplier
+                  }</td>
                 </tr>
               `
                 )
@@ -129,21 +179,6 @@ const ProductsScreen = ({ navigation }) => {
       console.error("Error generating PDF:", error);
       alert("Error generating PDF");
     }
-  };
-
-  const sortProducts = (key, order) => {
-    const sortedProducts = [...products];
-    sortedProducts.sort((a, b) => {
-      if (key === "price") {
-        return order === "asc" ? a.price - b.price : b.price - a.price;
-      } else if (key === "name") {
-        return order === "asc"
-          ? a.name.localeCompare(b.name)
-          : b.name.localeCompare(a.name);
-      }
-      return order === "asc" ? a.quantity - b.quantity : b.quantity - a.quantity;
-    });
-    setProducts(sortedProducts);
   };
 
   return (
@@ -178,21 +213,29 @@ const ProductsScreen = ({ navigation }) => {
         <View style={styles.sortContainer}>
           <TouchableOpacity
             style={styles.sortButton}
-            onPress={() => sortProducts("price", "asc")}
+            onPress={() => sortProducts("price")}
           >
-            <Text style={styles.sortButtonText}>Prix ↑</Text>
+            <Text style={styles.sortButtonText}>
+              Prix {sortOrder.price === "asc" ? "↑" : "↓"}
+            </Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             style={styles.sortButton}
-            onPress={() => sortProducts("name", "asc")}
+            onPress={() => sortProducts("quantity")}
           >
-            <Text style={styles.sortButtonText}>Nom A-Z</Text>
+            <Text style={styles.sortButtonText}>
+              Quantité {sortOrder.quantity === "asc" ? "↑" : "↓"}
+            </Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             style={styles.sortButton}
-            onPress={() => sortProducts("quantity", "desc")}
+            onPress={() => sortProducts("name")}
           >
-            <Text style={styles.sortButtonText}>Quantité ↓</Text>
+            <Text style={styles.sortButtonText}>
+              Nom {sortOrder.name === "asc" ? "A-Z" : "Z-A"}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -482,271 +525,3 @@ const styles = StyleSheet.create({
 });
 
 export default ProductsScreen;
-
-
-// import React, { useState, useEffect } from "react";
-// import {
-//   View,
-//   Text,
-//   TouchableOpacity,
-//   FlatList,
-//   TextInput,
-//   StyleSheet,
-//   ActivityIndicator,
-//   Image,
-//   Dimensions,
-// } from "react-native";
-// import { StatusBar } from "expo-status-bar";
-// import { LinearGradient } from "expo-linear-gradient";
-// import { Ionicons } from "@expo/vector-icons";
-// import axios from "axios";
-// import * as Print from "expo-print";
-// import * as Sharing from "expo-sharing";
-// import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-// const { width } = Dimensions.get("window");
-
-// const THEME = {
-//   // ... (garder le même THEME)
-// };
-
-// const ProductsScreen = ({ navigation }) => {
-//   const insets = useSafeAreaInsets();
-//   const [allProducts, setAllProducts] = useState([]); // Pour garder la liste originale
-//   const [products, setProducts] = useState([]); // Pour la liste filtrée
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
-//   const [searchText, setSearchText] = useState("");
-//   const [filters, setFilters] = useState({
-//     minPrice: "",
-//     maxPrice: "",
-//     type: "",
-//     supplier: "",
-//     inStock: false,
-//   });
-//   const [showFilters, setShowFilters] = useState(false);
-
-//   useEffect(() => {
-//     const fetchProducts = async () => {
-//       try {
-//         setError(null);
-//         const response = await axios.get("http://172.16.9.161:3000/products");
-//         setAllProducts(response.data);
-//         setProducts(response.data);
-//       } catch (error) {
-//         setError("Erreur lors du chargement des produits");
-//         console.error("Erreur:", error);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-//     fetchProducts();
-//   }, []);
-
-//   const applyFilters = () => {
-//     let filteredProducts = [...allProducts];
-
-//     // Filtre par texte de recherche
-//     if (searchText) {
-//       const searchLower = searchText.toLowerCase();
-//       filteredProducts = filteredProducts.filter(
-//         product =>
-//           product.name?.toLowerCase().includes(searchLower) ||
-//           product.type?.toLowerCase().includes(searchLower) ||
-//           product.supplier?.toLowerCase().includes(searchLower) ||
-//           product.price?.toString().includes(searchText)
-//       );
-//     }
-
-//     // Filtre par prix minimum
-//     if (filters.minPrice !== "") {
-//       filteredProducts = filteredProducts.filter(
-//         product => product.price >= parseFloat(filters.minPrice)
-//       );
-//     }
-
-//     // Filtre par prix maximum
-//     if (filters.maxPrice !== "") {
-//       filteredProducts = filteredProducts.filter(
-//         product => product.price <= parseFloat(filters.maxPrice)
-//       );
-//     }
-
-//     // Filtre par type
-//     if (filters.type) {
-//       const typeLower = filters.type.toLowerCase();
-//       filteredProducts = filteredProducts.filter(
-//         product => product.type?.toLowerCase().includes(typeLower)
-//       );
-//     }
-
-//     // Filtre par fournisseur
-//     if (filters.supplier) {
-//       const supplierLower = filters.supplier.toLowerCase();
-//       filteredProducts = filteredProducts.filter(
-//         product => product.supplier?.toLowerCase().includes(supplierLower)
-//       );
-//     }
-
-//     // Filtre pour les produits en stock
-//     if (filters.inStock) {
-//       filteredProducts = filteredProducts.filter(
-//         product => {
-//           if (Array.isArray(product.stocks)) {
-//             return product.stocks.some(stock => stock.quantity > 0);
-//           }
-//           return product.quantity > 0;
-//         }
-//       );
-//     }
-
-//     setProducts(filteredProducts);
-//   };
-
-//   // Appliquer les filtres à chaque changement
-//   useEffect(() => {
-//     applyFilters();
-//   }, [searchText, filters]);
-
-//   const FilterSection = () => (
-//     <View style={styles.filterSection}>
-//       <View style={styles.filterRow}>
-//         <TextInput
-//           style={styles.filterInput}
-//           placeholder="Prix min"
-//           value={filters.minPrice}
-//           onChangeText={(text) => setFilters({ ...filters, minPrice: text })}
-//           keyboardType="numeric"
-//         />
-//         <TextInput
-//           style={styles.filterInput}
-//           placeholder="Prix max"
-//           value={filters.maxPrice}
-//           onChangeText={(text) => setFilters({ ...filters, maxPrice: text })}
-//           keyboardType="numeric"
-//         />
-//       </View>
-//       <View style={styles.filterRow}>
-//         <TextInput
-//           style={styles.filterInput}
-//           placeholder="Type"
-//           value={filters.type}
-//           onChangeText={(text) => setFilters({ ...filters, type: text })}
-//         />
-//         <TextInput
-//           style={styles.filterInput}
-//           placeholder="Fournisseur"
-//           value={filters.supplier}
-//           onChangeText={(text) => setFilters({ ...filters, supplier: text })}
-//         />
-//       </View>
-//       <TouchableOpacity
-//         style={styles.stockToggle}
-//         onPress={() => setFilters({ ...filters, inStock: !filters.inStock })}
-//       >
-//         <View style={[styles.checkbox, filters.inStock && styles.checkboxChecked]}>
-//           {filters.inStock && <Ionicons name="checkmark" size={16} color="white" />}
-//         </View>
-//         <Text style={styles.stockToggleText}>Produits en stock uniquement</Text>
-//       </TouchableOpacity>
-//     </View>
-//   );
-
-//   // ... (garder le reste du code existant)
-
-//   return (
-//     <View style={[styles.container, { paddingTop: insets.top }]}>
-//       <StatusBar style="light" />
-      
-//       {/* Header */}
-//       <LinearGradient colors={THEME.gradients.header} style={styles.header}>
-//         <Text style={styles.headerTitle}>Produits</Text>
-//         <View style={styles.headerButtons}>
-//           <TouchableOpacity 
-//             style={styles.filterButton} 
-//             onPress={() => setShowFilters(!showFilters)}
-//           >
-//             <Ionicons name="filter" size={24} color={THEME.colors.textLight} />
-//           </TouchableOpacity>
-//           <TouchableOpacity style={styles.pdfButton} onPress={generatePDF}>
-//             <Ionicons name="document-text" size={24} color={THEME.colors.textLight} />
-//           </TouchableOpacity>
-//         </View>
-//       </LinearGradient>
-
-//       {/* Search and Filters */}
-//       <View style={styles.searchContainer}>
-//         <View style={styles.searchInputContainer}>
-//           <Ionicons name="search" size={20} color={THEME.colors.gray} />
-//           <TextInput
-//             style={styles.searchInput}
-//             placeholder="Rechercher un produit..."
-//             placeholderTextColor={THEME.colors.gray}
-//             value={searchText}
-//             onChangeText={setSearchText}
-//           />
-//         </View>
-        
-//         {showFilters && <FilterSection />}
-//       </View>
-
-//       {/* Rest of your existing code ... */}
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   // ... (garder les styles existants)
-  
-//   // Nouveaux styles pour les filtres
-//   filterSection: {
-//     backgroundColor: THEME.colors.surface,
-//     padding: 12,
-//     borderRadius: 12,
-//     marginTop: 8,
-//   },
-//   filterRow: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     marginBottom: 8,
-//   },
-//   filterInput: {
-//     flex: 0.48,
-//     backgroundColor: THEME.colors.background,
-//     borderRadius: 8,
-//     padding: 8,
-//     color: THEME.colors.text,
-//   },
-//   stockToggle: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     marginTop: 8,
-//   },
-//   checkbox: {
-//     width: 20,
-//     height: 20,
-//     borderRadius: 4,
-//     borderWidth: 2,
-//     borderColor: THEME.colors.primary,
-//     marginRight: 8,
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//   },
-//   checkboxChecked: {
-//     backgroundColor: THEME.colors.primary,
-//   },
-//   stockToggleText: {
-//     color: THEME.colors.text,
-//     fontSize: 14,
-//   },
-//   headerButtons: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//   },
-//   filterButton: {
-//     padding: 8,
-//     marginRight: 8,
-//   },
-// });
-
-// export default ProductsScreen;
