@@ -98,3 +98,10 @@ Pour Web :
 ```bash
 npm run web
 ```
+
+4. **lien du JIRA**
+https://cherkaouifatimazahra97.atlassian.net/jira/software/projects/IN/boards/4
+
+5. **lien du présentation du poject**
+https://www.canva.com/design/DAGfA-qiJiw/8m_a9b4sgDzMMNBfBk7Brw/edit
+
