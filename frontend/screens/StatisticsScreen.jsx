@@ -13,9 +13,8 @@ const StatisticsScreen = () => {
   });
 
   useEffect(() => {
-    // Appel à l'API pour récupérer les statistiques
     axios
-      .get("http://localhost:3000/statistics")
+      .get("http://172.16.9.161:3000/statistics")
       .then((response) => {
         setStatistics(response.data);
       })
