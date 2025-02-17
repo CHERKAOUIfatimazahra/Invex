@@ -19,27 +19,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const { width } = Dimensions.get("window");
-
-const THEME = {
-  colors: {
-    primary: "#7B61FF",
-    secondary: "#9C8FFF",
-    background: "#F8FAFF",
-    surface: "#FFFFFF",
-    text: "#2D3748",
-    textLight: "#FFFFFF",
-    gray: "#A0AEC0",
-    border: "#E2E8F0",
-    error: "#FF6B6B",
-    success: "#43E97B",
-  },
-  gradients: {
-    primary: ["#7B61FF", "#9C8FFF"],
-    success: ["#43E97B", "#38F9D7"],
-  },
-};
-
 const AddProductScreen = () => {
   const insets = useSafeAreaInsets();
   const { warehousemanId } = useContext(WarehouseContext);
@@ -75,7 +54,6 @@ const AddProductScreen = () => {
         setWarehouses(Array.from(existingWarehouses).map((w) => JSON.parse(w)));
       } catch (error) {
         console.error("Erreur lors de la récupération des entrepôts:", error);
-        Alert.alert("Erreur", "Impossible de charger les entrepôts");
       }
     };
 
@@ -124,227 +102,263 @@ const AddProductScreen = () => {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
+    <LinearGradient colors={["#8DE8CF", "#B7F5AA"]} style={styles.container}>
+      <View style={[styles.contentContainer, { paddingTop: insets.top }]}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="arrow-back" size={24} color={THEME.colors.text} />
+          <Ionicons name="arrow-back" size={24} color="#2D3748" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Nouveau Produit</Text>
-      </View>
 
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.formContainer}>
-          {/* Barcode Display */}
-          <View style={styles.barcodeContainer}>
-            <Ionicons
-              name="barcode-outline"
-              size={24}
-              color={THEME.colors.primary}
-            />
-            <Text style={styles.barcodeText}>{barcode}</Text>
-          </View>
+        <Text style={styles.title}>Nouveau Produit</Text>
 
-          {/* Form Fields */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Nom du produit</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Nom du produit"
-              value={name}
-              onChangeText={setName}
-              placeholderTextColor={THEME.colors.gray}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Type</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                style={styles.picker}
-                selectedValue={type}
-                onValueChange={setType}
-              >
-                <Picker.Item label="Type 1" value="Type1" />
-                <Picker.Item label="Type 2" value="Type2" />
-              </Picker>
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Prix</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="0.00 €"
-              value={price}
-              onChangeText={setPrice}
-              keyboardType="numeric"
-              placeholderTextColor={THEME.colors.gray}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Fournisseur</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Nom du fournisseur"
-              value={supplier}
-              onChangeText={setSupplier}
-              placeholderTextColor={THEME.colors.gray}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Entrepôt</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                style={styles.picker}
-                selectedValue={selectedWarehouse}
-                onValueChange={setSelectedWarehouse}
-              >
-                <Picker.Item label="Sélectionner un entrepôt" value={null} />
-                {warehouses.map((warehouse, index) => (
-                  <Picker.Item
-                    key={index}
-                    label={`${warehouse.name} (${warehouse.localisation.city})`}
-                    value={JSON.stringify(warehouse)}
-                  />
-                ))}
-              </Picker>
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Quantité en stock</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="0"
-              value={stockQuantity}
-              onChangeText={setStockQuantity}
-              keyboardType="numeric"
-              placeholderTextColor={THEME.colors.gray}
-            />
-          </View>
-        </View>
-      </ScrollView>
-
-      {/* Submit Button */}
-      <View style={styles.bottomContainer}>
-        <TouchableOpacity onPress={handleSubmit}>
-          <LinearGradient
-            colors={THEME.gradients.primary}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.submitButton}
+        <View style={styles.content}>
+          <ScrollView
+            style={styles.scrollView}
+            showsVerticalScrollIndicator={false}
           >
+            <View style={styles.formContainer}>
+              {/* Barcode Display */}
+              <View style={styles.barcodeContainer}>
+                <Ionicons name="barcode-outline" size={24} color="#2D3748" />
+                <Text style={styles.barcodeText}>{barcode}</Text>
+              </View>
+
+              {/* Form Fields */}
+              <View style={styles.formSection}>
+                <Text style={styles.label}>Nom du produit</Text>
+                <View style={styles.inputContainer}>
+                  <Ionicons
+                    name="cube-outline"
+                    size={24}
+                    color="#4A5568"
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Nom du produit"
+                    value={name}
+                    onChangeText={setName}
+                    placeholderTextColor="#4A5568"
+                  />
+                </View>
+
+                <Text style={styles.label}>Type</Text>
+                <View style={styles.pickerContainer}>
+                  <Ionicons
+                    name="list-outline"
+                    size={24}
+                    color="#4A5568"
+                    style={styles.inputIcon}
+                  />
+                  <Picker
+                    style={styles.picker}
+                    selectedValue={type}
+                    onValueChange={setType}
+                  >
+                    <Picker.Item label="Type 1" value="Type1" />
+                    <Picker.Item label="Type 2" value="Type2" />
+                  </Picker>
+                </View>
+
+                <Text style={styles.label}>Prix</Text>
+                <View style={styles.inputContainer}>
+                  <Ionicons
+                    name="pricetag-outline"
+                    size={24}
+                    color="#4A5568"
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="0.00 €"
+                    value={price}
+                    onChangeText={setPrice}
+                    keyboardType="numeric"
+                    placeholderTextColor="#4A5568"
+                  />
+                </View>
+
+                <Text style={styles.label}>Fournisseur</Text>
+                <View style={styles.inputContainer}>
+                  <Ionicons
+                    name="business-outline"
+                    size={24}
+                    color="#4A5568"
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Nom du fournisseur"
+                    value={supplier}
+                    onChangeText={setSupplier}
+                    placeholderTextColor="#4A5568"
+                  />
+                </View>
+
+                <Text style={styles.label}>Entrepôt</Text>
+                <View style={styles.pickerContainer}>
+                  <Ionicons
+                    name="home-outline"
+                    size={24}
+                    color="#4A5568"
+                    style={styles.inputIcon}
+                  />
+                  <Picker
+                    style={styles.picker}
+                    selectedValue={selectedWarehouse}
+                    onValueChange={setSelectedWarehouse}
+                  >
+                    <Picker.Item
+                      label="Sélectionner un entrepôt"
+                      value={null}
+                    />
+                    {warehouses.map((warehouse, index) => (
+                      <Picker.Item
+                        key={index}
+                        label={`${warehouse.name} (${warehouse.localisation.city})`}
+                        value={JSON.stringify(warehouse)}
+                      />
+                    ))}
+                  </Picker>
+                </View>
+
+                <Text style={styles.label}>Quantité en stock</Text>
+                <View style={styles.inputContainer}>
+                  <Ionicons
+                    name="calculator-outline"
+                    size={24}
+                    color="#4A5568"
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="0"
+                    value={stockQuantity}
+                    onChangeText={setStockQuantity}
+                    keyboardType="numeric"
+                    placeholderTextColor="#4A5568"
+                  />
+                </View>
+              </View>
+            </View>
+          </ScrollView>
+
+          {/* Submit Button */}
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
             <Text style={styles.submitButtonText}>Ajouter le produit</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+            <Ionicons name="arrow-forward" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: THEME.colors.background,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 20,
-    backgroundColor: THEME.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: THEME.colors.border,
+  contentContainer: {
+    flex: 1,
+    marginTop: 20,
   },
   backButton: {
-    marginRight: 16,
+    position: "absolute",
+    top: 40,
+    left: 20,
+    zIndex: 1,
+    padding: 8,
   },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: THEME.colors.text,
+  title: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#2D3748",
+    marginTop: 60,
+    marginBottom: 20,
+    paddingHorizontal: 24,
+  },
+  content: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: 24,
   },
   scrollView: {
     flex: 1,
+    marginBottom: 20,
   },
   formContainer: {
-    padding: 20,
+    gap: 20,
   },
   barcodeContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: THEME.colors.surface,
+    backgroundColor: "#F7FAFC",
     padding: 16,
     borderRadius: 12,
-    marginBottom: 24,
-    elevation: 2,
-    shadowColor: THEME.colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
   },
   barcodeText: {
     marginLeft: 12,
     fontSize: 16,
-    color: THEME.colors.text,
+    color: "#2D3748",
     fontWeight: "500",
   },
-  inputGroup: {
-    marginBottom: 20,
+  formSection: {
+    gap: 16,
   },
   label: {
     fontSize: 16,
-    fontWeight: "600",
-    color: THEME.colors.text,
+    color: "#2D3748",
     marginBottom: 8,
+    fontWeight: "600",
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F7FAFC",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+  },
+  inputIcon: {
+    padding: 12,
   },
   input: {
-    backgroundColor: THEME.colors.surface,
-    borderWidth: 1,
-    borderColor: THEME.colors.border,
-    borderRadius: 12,
-    padding: 16,
+    flex: 1,
+    color: "#2D3748",
     fontSize: 16,
-    color: THEME.colors.text,
+    padding: 12,
   },
   pickerContainer: {
-    backgroundColor: THEME.colors.surface,
-    borderWidth: 1,
-    borderColor: THEME.colors.border,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F7FAFC",
     borderRadius: 12,
-    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
   },
   picker: {
+    flex: 1,
     height: 50,
-    width: "100%",
-  },
-  bottomContainer: {
-    padding: 20,
-    backgroundColor: THEME.colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: THEME.colors.border,
   },
   submitButton: {
+    backgroundColor: "#8DE8CF",
     borderRadius: 12,
     padding: 16,
-    elevation: 4,
-    shadowColor: THEME.colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
   },
   submitButtonText: {
-    color: THEME.colors.textLight,
-    fontSize: 16,
+    color: "#FFFFFF",
+    fontSize: 18,
     fontWeight: "600",
-    textAlign: "center",
   },
 });
 
