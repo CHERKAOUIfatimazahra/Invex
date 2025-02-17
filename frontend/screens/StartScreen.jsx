@@ -11,17 +11,6 @@ import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 
-const THEME = {
-  colors: {
-    primary: "#8DE8CF",
-    secondary: "#B7F5AA",
-    text: "#FFFFFF",
-    textLight: "rgba(255, 255, 255, 0.8)",
-    white: "#FFFFFF",
-    shadow: "rgba(0, 0, 0, 0.6)",
-  },
-};
-
 const StartScreen = () => {
   const navigation = useNavigation();
 
@@ -72,7 +61,7 @@ const StartScreen = () => {
             style={styles.primaryButton}
           >
             <LinearGradient
-              colors={[THEME.colors.primary, THEME.colors.secondary]}
+              colors={["#8DE8CF", "#B7F5AA"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.gradientButton}
@@ -81,7 +70,7 @@ const StartScreen = () => {
               <Ionicons
                 name="arrow-forward"
                 size={24}
-                color={THEME.colors.text}
+                color="#FFFFFF"
               />
             </LinearGradient>
           </TouchableOpacity>
@@ -96,7 +85,7 @@ const FeatureItem = ({ icon, title, description }) => (
     <Ionicons
       name={icon}
       size={32}
-      color={THEME.colors.white}
+      color="#FFFFFF"
       style={styles.featureIcon}
     />
     <View style={styles.featureContent}>
@@ -112,7 +101,7 @@ const styles = StyleSheet.create({
   },
   darkOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: THEME.colors.shadow,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
   },
   gradient: {
     flex: 1,
@@ -129,7 +118,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 42,
     fontWeight: "bold",
-    color: THEME.colors.white,
+    color: "#FFFFFF",
     textAlign: "center",
     marginBottom: 12,
     textShadowColor: "rgba(0, 0, 0, 0.75)",
@@ -138,7 +127,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 18,
-    color: THEME.colors.textLight,
+    color: "rgba(255, 255, 255, 0.8)",
     textAlign: "center",
     maxWidth: "80%",
     textShadowColor: "rgba(0, 0, 0, 0.75)",
@@ -166,7 +155,7 @@ const styles = StyleSheet.create({
   featureTitle: {
     fontSize: 20,
     fontWeight: "600",
-    color: THEME.colors.white,
+    color: "#FFFFFF",
     marginBottom: 4,
     textShadowColor: "rgba(0, 0, 0, 0.75)",
     textShadowOffset: { width: 0, height: 1 },
@@ -174,7 +163,7 @@ const styles = StyleSheet.create({
   },
   featureDescription: {
     fontSize: 16,
-    color: THEME.colors.textLight,
+    color: "rgba(255, 255, 255, 0.8)",
     lineHeight: 22,
     textShadowColor: "rgba(0, 0, 0, 0.75)",
     textShadowOffset: { width: 0, height: 1 },
@@ -200,7 +189,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   buttonText: {
-    color: THEME.colors.text,
+    color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "600",
   },

@@ -20,30 +20,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
 
-const THEME = {
-  colors: {
-    primary: "#7B61FF",
-    secondary: "#9C8FFF",
-    scanner: "#FF6B6B",
-    products: "#4facfe",
-    statistics: "#7B61FF",
-    reports: "#43E97B",
-    background: "#F8FAFF",
-    surface: "#FFFFFF",
-    text: "#2D3748",
-    textLight: "#FFFFFF",
-    gray: "#A0AEC0",
-    border: "#E2E8F0",
-    error: "#FF6B6B",
-    warning: "#FFB036",
-    success: "#4CD964",
-  },
-  gradients: {
-    header: ["#7B61FF", "#9C8FFF"],
-    content: ["rgba(123, 97, 255, 0.1)", "rgba(156, 143, 255, 0.1)"],
-  },
-};
-
 const ProductsScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [products, setProducts] = useState([]);
@@ -58,9 +34,9 @@ const ProductsScreen = ({ navigation }) => {
   });
 
   const getStockStatusColor = (quantity) => {
-    if (quantity <= 0) return THEME.colors.error;
-    if (quantity <= 10) return THEME.colors.warning;
-    return THEME.colors.success;
+    if (quantity <= 0) return "#E53E3E";
+    if (quantity <= 10) return "#FFB036";
+    return "#4CD964";
   };
 
   // fitch products
@@ -182,274 +158,247 @@ const ProductsScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar style="light" />
-
-      {/* Header */}
-      <LinearGradient colors={THEME.gradients.header} style={styles.header}>
-        <Text style={styles.headerTitle}>Produits</Text>
-        <TouchableOpacity style={styles.pdfButton} onPress={generatePDF}>
-          <Ionicons
-            name="document-text"
-            size={24}
-            color={THEME.colors.textLight}
-          />
-        </TouchableOpacity>
-      </LinearGradient>
-
-      {/* Search and Sort */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchInputContainer}>
-          <Ionicons name="search" size={20} color={THEME.colors.gray} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Rechercher un produit..."
-            placeholderTextColor={THEME.colors.gray}
-            value={searchText}
-            onChangeText={filterProducts}
-          />
-        </View>
-
-        <View style={styles.sortContainer}>
-          <TouchableOpacity
-            style={styles.sortButton}
-            onPress={() => sortProducts("price")}
-          >
-            <Text style={styles.sortButtonText}>
-              Prix {sortOrder.price === "asc" ? "↑" : "↓"}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.sortButton}
-            onPress={() => sortProducts("quantity")}
-          >
-            <Text style={styles.sortButtonText}>
-              Quantité {sortOrder.quantity === "asc" ? "↑" : "↓"}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.sortButton}
-            onPress={() => sortProducts("name")}
-          >
-            <Text style={styles.sortButtonText}>
-              Nom {sortOrder.name === "asc" ? "A-Z" : "Z-A"}
-            </Text>
+    <LinearGradient colors={["#8DE8CF", "#B7F5AA"]} style={styles.container}>
+      <StatusBar style="dark" />
+      <View style={styles.contentContainer}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Produits</Text>
+          <TouchableOpacity style={styles.pdfButton} onPress={generatePDF}>
+            <Ionicons name="document-text" size={24} color="#2D3748" />
           </TouchableOpacity>
         </View>
-      </View>
 
-      {loading ? (
-        <ActivityIndicator
-          size="large"
-          color={THEME.colors.primary}
-          style={styles.loader}
-        />
-      ) : (
-        <FlatList
-          data={products}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.listContainer}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.productCard}
-              onPress={() =>
-                navigation.navigate("ProductDetail", { product: item })
-              }
-            >
-              <View style={styles.imageContainer}>
-                {item.image ? (
-                  <Image
-                    source={
-                      { uri: item.image } ||
-                      require("../assets/Invex__1_-removebg-preview.png")
-                    }
-                    style={styles.productImage}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View style={styles.placeholderImage}>
-                    <Ionicons
-                      name="image-outline"
-                      size={40}
-                      color={THEME.colors.gray}
-                    />
-                  </View>
-                )}
-              </View>
-              <View style={styles.productInfo}>
-                <Text style={styles.productName}>{item.name}</Text>
-                <Text style={styles.productType}>{item.type}</Text>
-                <Text style={styles.price}>{item.price} DH</Text>
-                <Text style={styles.supplier}>{item.supplier}</Text>
+        <View style={styles.content}>
+          <View style={styles.searchSection}>
+            <View style={styles.inputContainer}>
+              <Ionicons
+                name="search-outline"
+                size={24}
+                color="#4A5568"
+                style={styles.inputIcon}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Rechercher un produit..."
+                placeholderTextColor="#4A5568"
+                value={searchText}
+                onChangeText={filterProducts}
+              />
+            </View>
 
-                {Array.isArray(item.stocks) && item.stocks.length > 0 && (
-                  <View style={styles.stocksContainer}>
-                    {item.stocks.map((stock) => (
-                      <View key={stock.id} style={styles.stockItem}>
-                        <Text style={styles.stockName}>{stock.name}</Text>
-                        <Text
-                          style={[
-                            styles.stockQuantity,
-                            { color: getStockStatusColor(stock.quantity) },
-                          ]}
-                        >
-                          quantity: {stock.quantity}
-                        </Text>
+            <View style={styles.sortButtons}>
+              <TouchableOpacity
+                style={styles.sortButton}
+                onPress={() => sortProducts("price")}
+              >
+                <Text style={styles.sortButtonText}>
+                  Prix {sortOrder.price === "asc" ? "↑" : "↓"}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.sortButton}
+                onPress={() => sortProducts("quantity")}
+              >
+                <Text style={styles.sortButtonText}>
+                  Quantité {sortOrder.quantity === "asc" ? "↑" : "↓"}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.sortButton}
+                onPress={() => sortProducts("name")}
+              >
+                <Text style={styles.sortButtonText}>
+                  Nom {sortOrder.name === "asc" ? "A-Z" : "Z-A"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {loading ? (
+            <ActivityIndicator
+              size="large"
+              color="#8DE8CF"
+              style={styles.loader}
+            />
+          ) : (
+            <FlatList
+              data={products}
+              keyExtractor={(item) => item.id.toString()}
+              contentContainerStyle={styles.listContainer}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.productCard}
+                  onPress={() =>
+                    navigation.navigate("ProductDetail", { product: item })
+                  }
+                >
+                  <View style={styles.imageContainer}>
+                    {item.image ? (
+                      <Image
+                        source={{ uri: item.image }}
+                        style={styles.productImage}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <View style={styles.placeholderImage}>
+                        <Ionicons
+                          name="image-outline"
+                          size={40}
+                          color="#4A5568"
+                        />
                       </View>
-                    ))}
+                    )}
                   </View>
-                )}
-              </View>
-            </TouchableOpacity>
+                  <View style={styles.productInfo}>
+                    <Text style={styles.productName}>{item.name}</Text>
+                    <Text style={styles.productType}>{item.type}</Text>
+                    <Text style={styles.price}>{item.price} DH</Text>
+                    <Text style={styles.supplier}>{item.supplier}</Text>
+
+                    {Array.isArray(item.stocks) && item.stocks.length > 0 && (
+                      <View style={styles.stocksContainer}>
+                        {item.stocks.map((stock) => (
+                          <View key={stock.id} style={styles.stockItem}>
+                            <Text style={styles.stockName}>{stock.name}</Text>
+                            <Text
+                              style={[
+                                styles.stockQuantity,
+                                { color: getStockStatusColor(stock.quantity) },
+                              ]}
+                            >
+                              Quantité: {stock.quantity}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              )}
+            />
           )}
-        />
-      )}
+        </View>
 
-      {/* Bottom Navigation */}
-      <View style={[styles.bottomNav, { paddingBottom: insets.bottom }]}>
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate("Scan")}
-        >
-          <Ionicons
-            name="barcode-outline"
-            size={24}
-            color={THEME.colors.scanner}
-          />
-          <Text style={[styles.navText, { color: THEME.colors.scanner }]}>
-            Scanner
-          </Text>
-        </TouchableOpacity>
+        {/* navbar */}
+        <View style={styles.bottomNav}>
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => navigation.navigate("Scan")}
+          >
+            <Ionicons name="barcode-outline" size={24} color="#2D3748" />
+            <Text style={styles.navText}>Scanner</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate("Products")}
-        >
-          <Ionicons
-            name="cube-outline"
-            size={24}
-            color={THEME.colors.products}
-          />
-          <Text style={[styles.navText, { color: THEME.colors.products }]}>
-            Produits
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => navigation.navigate("Products")}
+          >
+            <Ionicons name="cube-outline" size={24} color="#8DE8CF" />
+            <Text style={[styles.navText, { color: "#8DE8CF" }]}>Produits</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate("Statistics")}
-        >
-          <Ionicons
-            name="stats-chart-outline"
-            size={24}
-            color={THEME.colors.statistics}
-          />
-          <Text style={[styles.navText, { color: THEME.colors.statistics }]}>
-            Stats
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => navigation.navigate("Statistics")}
+          >
+            <Ionicons name="stats-chart-outline" size={24} color="#2D3748" />
+            <Text style={styles.navText}>Stats</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate("PDF")}
-        >
-          <Ionicons
-            name="document-text-outline"
-            size={24}
-            color={THEME.colors.reports}
-          />
-          <Text style={[styles.navText, { color: THEME.colors.reports }]}>
-            Rapports
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => navigation.navigate("PDF")}
+          >
+            <Ionicons name="document-text-outline" size={24} color="#2D3748" />
+            <Text style={styles.navText}>Rapports</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: THEME.colors.background,
+  },
+  contentContainer: {
+    flex: 1,
+    marginTop: 60,
   },
   header: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    padding: 16,
-    paddingTop: 20,
+    alignItems: "center",
+    paddingHorizontal: 24,
+    marginBottom: 20,
   },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: "600",
-    color: THEME.colors.textLight,
+  title: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#2D3748",
   },
-  pdfButton: {
-    padding: 8,
+  content: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: 24,
   },
-  searchContainer: {
-    padding: 16,
-    backgroundColor: THEME.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: THEME.colors.border,
+  searchSection: {
+    gap: 16,
+    marginBottom: 20,
   },
-  searchInputContainer: {
+  inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: THEME.colors.background,
+    backgroundColor: "#F7FAFC",
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+  },
+  inputIcon: {
     padding: 12,
-    marginBottom: 16,
   },
-  searchInput: {
+  input: {
     flex: 1,
-    marginLeft: 8,
+    color: "#2D3748",
     fontSize: 16,
-    color: THEME.colors.text,
+    padding: 12,
   },
-  sortContainer: {
+  sortButtons: {
     flexDirection: "row",
     gap: 8,
   },
   sortButton: {
     flex: 1,
-    backgroundColor: THEME.colors.primary,
-    padding: 8,
-    borderRadius: 8,
+    backgroundColor: "#8DE8CF",
+    padding: 12,
+    borderRadius: 12,
     alignItems: "center",
   },
   sortButtonText: {
-    color: THEME.colors.textLight,
-    fontSize: 12,
+    color: "#FFFFFF",
+    fontSize: 14,
     fontWeight: "600",
-  },
-  loader: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  listContainer: {
-    padding: 16,
   },
   productCard: {
     flexDirection: "row",
-    backgroundColor: THEME.colors.surface,
-    borderRadius: 16,
+    backgroundColor: "#F7FAFC",
+    borderRadius: 12,
     marginBottom: 16,
     padding: 16,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
   },
   imageContainer: {
     width: 80,
     height: 80,
     borderRadius: 12,
     overflow: "hidden",
-    backgroundColor: THEME.colors.background,
+    backgroundColor: "#FFFFFF",
   },
   productImage: {
     width: "100%",
@@ -468,23 +417,23 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 18,
     fontWeight: "600",
-    color: THEME.colors.text,
+    color: "#2D3748",
     marginBottom: 4,
   },
   productType: {
     fontSize: 14,
-    color: THEME.colors.gray,
+    color: "#4A5568",
     marginBottom: 8,
   },
   price: {
     fontSize: 16,
     fontWeight: "600",
-    color: THEME.colors.primary,
+    color: "#8DE8CF",
     marginBottom: 4,
   },
   supplier: {
     fontSize: 14,
-    color: THEME.colors.gray,
+    color: "#4A5568",
   },
   stocksContainer: {
     marginTop: 8,
@@ -497,7 +446,7 @@ const styles = StyleSheet.create({
   },
   stockName: {
     fontSize: 14,
-    color: THEME.colors.text,
+    color: "#2D3748",
   },
   stockQuantity: {
     fontSize: 14,
@@ -505,12 +454,13 @@ const styles = StyleSheet.create({
   },
   bottomNav: {
     flexDirection: "row",
-    backgroundColor: THEME.colors.surface,
+    backgroundColor: "#FFFFFF",
     borderTopWidth: 1,
-    borderTopColor: THEME.colors.border,
+    borderTopColor: "#E2E8F0",
     paddingTop: 12,
     paddingHorizontal: 16,
     justifyContent: "space-between",
+    marginTop: "auto",
   },
   navItem: {
     flex: 1,
