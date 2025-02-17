@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
   Alert,
   TextInput,
-  Dimensions,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
@@ -18,32 +17,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import axios from "axios";
 import { WarehouseContext } from "../Context/WarehouseContext";
-
-const { width } = Dimensions.get("window");
-
-const THEME = {
-  colors: {
-    primary: "#7B61FF",
-    secondary: "#9C8FFF",
-    scanner: "#FF6B6B",
-    products: "#4facfe",
-    statistics: "#7B61FF",
-    reports: "#43E97B",
-    background: "#F8FAFF",
-    surface: "#FFFFFF",
-    text: "#2D3748",
-    textLight: "#FFFFFF",
-    gray: "#A0AEC0",
-    border: "#E2E8F0",
-    error: "#FF6B6B",
-    warning: "#FFB036",
-    success: "#4CD964",
-  },
-  gradients: {
-    header: ["#7B61FF", "#9C8FFF"],
-    content: ["rgba(123, 97, 255, 0.1)", "rgba(156, 143, 255, 0.1)"],
-  },
-};
 
 const ProductDetailScreen = ({ route }) => {
   const navigation = useNavigation();
@@ -54,268 +27,274 @@ const ProductDetailScreen = ({ route }) => {
   const [quantities, setQuantities] = useState({});
   const { warehousemanId } = useContext(WarehouseContext);
 
+  // pour les couleur des quantités
   const getStockStatusColor = (quantity) => {
-    if (quantity === 0) return THEME.colors.error;
-    if (quantity < 10) return THEME.colors.warning;
-    return THEME.colors.success;
+    if (quantity === 0) return "#E53E3E";
+    if (quantity < 10) return "#FFB036";
+    return "#4CD964";
   };
 
-  const updateStockQuantity = async (stockId, amount) => {
-    if (amount === 0 || isNaN(amount)) {
-      Alert.alert("Erreur", "Veuillez entrer un nombre valide.");
+  // update quantité du stock
+  const updateStockQuantity = async (stockId, isAddition) => {
+
+    // Vérifier si la quantité est valide
+    const amount = Number(quantities[stockId]);
+    if (amount <= 0 || isNaN(amount)) {
+      Alert.alert("Erreur", "Veuillez entrer un nombre valide supérieur à 0");
       return;
     }
 
     setLoading(true);
+
     try {
-      const updatedStocks = currentProduct.stocks.map((stock) => {
+      const newStocks = currentProduct.stocks.map((stock) => {
         if (stock.id === stockId) {
-          const newQuantity = stock.quantity + amount;
-          return { ...stock, quantity: newQuantity >= 0 ? newQuantity : 0 };
+          let newQuantity = stock.quantity;
+
+          if (isAddition) {
+            newQuantity = stock.quantity + amount;
+          } else {
+            newQuantity = stock.quantity - amount;
+            if (newQuantity < 0) {
+              newQuantity = 0;
+            }
+          }
+          return { ...stock, quantity: newQuantity };
         }
         return stock;
       });
 
+      // Mettre à jour la base de données
       await axios.patch(
         `http://172.16.9.161:3000/products/${currentProduct.id}`,
         {
-          stocks: updatedStocks,
+          stocks: newStocks,
           warehousemanId: warehousemanId,
         }
       );
-      setCurrentProduct((prev) => ({ ...prev, stocks: updatedStocks }));
-      setQuantities((prev) => ({ ...prev, [stockId]: "" }));
+
+      // Mettre à jour l'interface
+      setCurrentProduct({ ...currentProduct, stocks: newStocks });
+      setQuantities({ ...quantities, [stockId]: "" });
     } catch (error) {
-      console.error("Erreur lors de la mise à jour du stock:", error);
-      Alert.alert("Erreur", "Impossible de mettre à jour le stock.");
+      console.error("erreur",error);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar style="light" />
-
-      {/* Header */}
-      <LinearGradient colors={THEME.gradients.header} style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color={THEME.colors.textLight}
-          />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Détails du produit</Text>
-      </LinearGradient>
-
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.productCard}>
-          {currentProduct.imageUrl ? (
-            <Image
-              source={{ uri: currentProduct.imageUrl }}
-              style={styles.productImage}
-            />
-          ) : (
-            <Image
-              source={require("../assets/Invex__1_-removebg-preview.png")}
-              style={styles.productImage}
-            />
-          )}
-
-          <Text style={styles.productName}>{currentProduct.name}</Text>
-
-          <View style={styles.detailsContainer}>
-            <DetailItem
-              icon="cube-outline"
-              label="Type"
-              value={currentProduct.type}
-            />
-            <DetailItem
-              icon="pricetag-outline"
-              label="Prix"
-              value={`${currentProduct.price} DH`}
-            />
-            <DetailItem
-              icon="business-outline"
-              label="Fournisseur"
-              value={currentProduct.supplier}
-            />
+    <LinearGradient colors={["#8DE8CF", "#B7F5AA"]} style={styles.container}>
+      <StatusBar style="dark" />
+      <View style={[styles.contentContainer, { paddingTop: insets.top }]}>
+        <View style={styles.content}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="arrow-back" size={24} color="#2D3748" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Détails du produit</Text>
           </View>
-        </View>
 
-        <Text style={styles.sectionTitle}>Stocks disponibles</Text>
+          <ScrollView style={styles.scrollView}>
+            <View style={styles.productCard}>
+              {currentProduct.imageUrl ? (
+                <Image
+                  source={{ uri: currentProduct.imageUrl }}
+                  style={styles.productImage}
+                />
+              ) : (
+                <Image
+                  source={require("../assets/Invex__1_-removebg-preview.png")}
+                  style={styles.productImage}
+                />
+              )}
 
-        {Array.isArray(currentProduct.stocks) &&
-        currentProduct.stocks.length > 0 ? (
-          currentProduct.stocks.map((stock) => (
-            <View key={stock.id} style={styles.stockCard}>
-              <Text style={styles.stockName}>{stock.name}</Text>
-              <Text style={styles.stockLocation}>
-                {stock.localisation.city}
-              </Text>
-              <Text
-                style={[
-                  styles.stockQuantity,
-                  { color: getStockStatusColor(stock.quantity) },
-                ]}
-              >
-                Quantité: {stock.quantity}
-              </Text>
+              <Text style={styles.productName}>{currentProduct.name}</Text>
 
-              <TextInput
-                style={styles.input}
-                keyboardType="numeric"
-                placeholder="Quantité à modifier"
-                placeholderTextColor={THEME.colors.gray}
-                value={quantities[stock.id] || ""}
-                onChangeText={(text) =>
-                  setQuantities((prev) => ({ ...prev, [stock.id]: text }))
-                }
-              />
-
-              <View style={styles.buttonGroup}>
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.addButton]}
-                  onPress={() =>
-                    updateStockQuantity(
-                      stock.id,
-                      Number(quantities[stock.id] || 0)
-                    )
-                  }
-                  disabled={loading}
-                >
-                  <Ionicons
-                    name="add-outline"
-                    size={20}
-                    color={THEME.colors.textLight}
-                  />
-                  <Text style={styles.buttonText}>Ajouter</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.removeButton]}
-                  onPress={() =>
-                    updateStockQuantity(
-                      stock.id,
-                      -Number(quantities[stock.id] || 0)
-                    )
-                  }
-                  disabled={loading}
-                >
-                  <Ionicons
-                    name="remove-outline"
-                    size={20}
-                    color={THEME.colors.textLight}
-                  />
-                  <Text style={styles.buttonText}>Retirer</Text>
-                </TouchableOpacity>
+              <View style={styles.detailsContainer}>
+                <DetailItem
+                  icon="cube-outline"
+                  label="Type"
+                  value={currentProduct.type}
+                />
+                <DetailItem
+                  icon="pricetag-outline"
+                  label="Prix"
+                  value={`${currentProduct.price} DH`}
+                />
+                <DetailItem
+                  icon="business-outline"
+                  label="Fournisseur"
+                  value={currentProduct.supplier}
+                />
               </View>
             </View>
-          ))
-        ) : (
-          <Text style={styles.noStock}>Aucun stock disponible.</Text>
-        )}
 
-        {loading && (
-          <ActivityIndicator
-            size="large"
-            color={THEME.colors.primary}
-            style={styles.loader}
-          />
-        )}
-      </ScrollView>
+            <Text style={styles.sectionTitle}>Stocks disponibles</Text>
 
-      {/* Bottom Navigation */}
-      <View style={[styles.bottomNav, { paddingBottom: insets.bottom }]}>
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate("Scan")}
-        >
-          <Ionicons
-            name="barcode-outline"
-            size={24}
-            color={THEME.colors.scanner}
-          />
-          <Text style={[styles.navText, { color: THEME.colors.scanner }]}>
-            Scanner
-          </Text>
-        </TouchableOpacity>
+            {Array.isArray(currentProduct.stocks) &&
+            currentProduct.stocks.length > 0 ? (
+              currentProduct.stocks.map((stock) => (
+                <View key={stock.id} style={styles.stockCard}>
+                  <Text style={styles.stockName}>{stock.name}</Text>
+                  <Text style={styles.stockLocation}>
+                    {stock.localisation.city}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.stockQuantity,
+                      { color: getStockStatusColor(stock.quantity) },
+                    ]}
+                  >
+                    Quantité: {stock.quantity}
+                  </Text>
 
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate("Products")}
-        >
-          <Ionicons
-            name="cube-outline"
-            size={24}
-            color={THEME.colors.products}
-          />
-          <Text style={[styles.navText, { color: THEME.colors.products }]}>
-            Produits
-          </Text>
-        </TouchableOpacity>
+                  <View style={styles.inputContainer}>
+                    <Ionicons
+                      name="cube-outline"
+                      size={24}
+                      color="#4A5568"
+                      style={styles.inputIcon}
+                    />
+                    <TextInput
+                      style={styles.input}
+                      keyboardType="numeric"
+                      placeholder="Quantité à modifier"
+                      placeholderTextColor="#4A5568"
+                      value={quantities[stock.id] || ""}
+                      onChangeText={(text) =>
+                        setQuantities((prev) => ({ ...prev, [stock.id]: text }))
+                      }
+                    />
+                  </View>
 
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate("Statistics")}
-        >
-          <Ionicons
-            name="stats-chart-outline"
-            size={24}
-            color={THEME.colors.statistics}
-          />
-          <Text style={[styles.navText, { color: THEME.colors.statistics }]}>
-            Stats
-          </Text>
-        </TouchableOpacity>
+                  <View style={styles.buttonGroup}>
+                    <TouchableOpacity
+                      style={[styles.actionButton, styles.addButton]}
+                      onPress={() => updateStockQuantity(stock.id, true)}
+                      disabled={loading}
+                    >
+                      <Ionicons name="add-outline" size={20} color="#FFFFFF" />
+                      <Text style={styles.buttonText}>Ajouter</Text>
+                    </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate("PDF")}
-        >
-          <Ionicons
-            name="document-text-outline"
-            size={24}
-            color={THEME.colors.reports}
-          />
-          <Text style={[styles.navText, { color: THEME.colors.reports }]}>
-            Rapports
-          </Text>
-        </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.actionButton, styles.removeButton]}
+                      onPress={() => updateStockQuantity(stock.id, false)}
+                      disabled={loading}
+                    >
+                      <Ionicons
+                        name="remove-outline"
+                        size={20}
+                        color="#FFFFFF"
+                      />
+                      <Text style={styles.buttonText}>Retirer</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.noStock}>Aucun stock disponible.</Text>
+            )}
+
+            {loading && (
+              <ActivityIndicator
+                size="large"
+                color="#8DE8CF"
+                style={styles.loader}
+              />
+            )}
+          </ScrollView>
+
+          {/* Bottom Navigation */}
+          <View style={[styles.bottomNav, { paddingBottom: insets.bottom }]}>
+            <TouchableOpacity
+              style={styles.navItem}
+              onPress={() => navigation.navigate("Scan")}
+            >
+              <Ionicons name="barcode-outline" size={24} color="#8DE8CF" />
+              <Text style={[styles.navText, { color: "#8DE8CF" }]}>
+                Scanner
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.navItem}
+              onPress={() => navigation.navigate("Products")}
+            >
+              <Ionicons name="cube-outline" size={24} color="#4A5568" />
+              <Text style={[styles.navText, { color: "#4A5568" }]}>
+                Produits
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.navItem}
+              onPress={() => navigation.navigate("Statistics")}
+            >
+              <Ionicons name="stats-chart-outline" size={24} color="#4A5568" />
+              <Text style={[styles.navText, { color: "#4A5568" }]}>Stats</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.navItem}
+              onPress={() => navigation.navigate("PDF")}
+            >
+              <Ionicons
+                name="document-text-outline"
+                size={24}
+                color="#4A5568"
+              />
+              <Text style={[styles.navText, { color: "#4A5568" }]}>
+                Rapports
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 
-const DetailItem = ({ icon, label, value }) => (
-  <View style={styles.detailItem}>
-    <Ionicons name={icon} size={24} color={THEME.colors.primary} />
-    <View style={styles.detailContent}>
-      <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailValue}>{value}</Text>
-    </View>
-  </View>
-);
+// const DetailItem = ({ icon, label, value }) => (
+//   <View style={styles.detailItem}>
+//     <Ionicons name={icon} size={24} color="#8DE8CF" />
+//     <View style={styles.detailContent}>
+//       <Text style={styles.detailLabel}>{label}</Text>
+//       <Text style={styles.detailValue}>{value}</Text>
+//     </View>
+//   </View>
+// );
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: THEME.colors.background,
+  },
+  contentContainer: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    marginTop: 20,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
-    paddingTop: 20,
+    padding: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E2E8F0",
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "600",
-    color: THEME.colors.textLight,
+    color: "#2D3748",
     marginLeft: 16,
   },
   backButton: {
@@ -325,7 +304,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   productCard: {
-    backgroundColor: THEME.colors.surface,
+    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     margin: 16,
     padding: 16,
@@ -344,7 +323,7 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 24,
     fontWeight: "700",
-    color: THEME.colors.text,
+    color: "#2D3748",
     marginBottom: 16,
   },
   detailsContainer: {
@@ -360,21 +339,21 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 14,
-    color: THEME.colors.gray,
+    color: "#4A5568",
   },
   detailValue: {
     fontSize: 16,
-    color: THEME.colors.text,
+    color: "#2D3748",
     fontWeight: "500",
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: "600",
-    color: THEME.colors.text,
+    color: "#2D3748",
     margin: 16,
   },
   stockCard: {
-    backgroundColor: THEME.colors.surface,
+    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     margin: 16,
     marginTop: 0,
@@ -388,12 +367,12 @@ const styles = StyleSheet.create({
   stockName: {
     fontSize: 18,
     fontWeight: "600",
-    color: THEME.colors.text,
+    color: "#2D3748",
     marginBottom: 8,
   },
   stockLocation: {
     fontSize: 16,
-    color: THEME.colors.gray,
+    color: "#4A5568",
     marginBottom: 12,
   },
   stockQuantity: {
@@ -401,14 +380,23 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     marginBottom: 16,
   },
-  input: {
-    backgroundColor: THEME.colors.background,
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F7FAFC",
     borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    marginBottom: 16,
     borderWidth: 1,
-    borderColor: THEME.colors.border,
+    borderColor: "#E2E8F0",
+    marginBottom: 16,
+  },
+  inputIcon: {
+    padding: 12,
+  },
+  input: {
+    flex: 1,
+    color: "#2D3748",
+    fontSize: 16,
+    padding: 12,
   },
   buttonGroup: {
     flexDirection: "row",
@@ -424,19 +412,19 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   addButton: {
-    backgroundColor: THEME.colors.primary,
+    backgroundColor: "#8DE8CF",
   },
   removeButton: {
-    backgroundColor: THEME.colors.error,
+    backgroundColor: "#E53E3E",
   },
   buttonText: {
-    color: THEME.colors.textLight,
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
   },
   noStock: {
     fontSize: 16,
-    color: THEME.colors.gray,
+    color: "#4A5568",
     textAlign: "center",
     margin: 16,
   },
@@ -445,9 +433,9 @@ const styles = StyleSheet.create({
   },
   bottomNav: {
     flexDirection: "row",
-    backgroundColor: THEME.colors.surface,
+    backgroundColor: "#FFFFFF",
     borderTopWidth: 1,
-    borderTopColor: THEME.colors.border,
+    borderTopColor: "#E2E8F0",
     paddingTop: 12,
     paddingHorizontal: 16,
     justifyContent: "space-between",
