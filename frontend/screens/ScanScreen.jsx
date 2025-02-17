@@ -18,39 +18,20 @@ import axios from "axios";
 
 const { width } = Dimensions.get("window");
 
-const THEME = {
-  colors: {
-    primary: "#7B61FF",
-    secondary: "#9C8FFF",
-    scanner: "#FF6B6B",
-    products: "#4facfe",
-    statistics: "#7B61FF",
-    reports: "#43E97B",
-    background: "#F8FAFF",
-    surface: "#FFFFFF",
-    text: "#2D3748",
-    textLight: "#FFFFFF",
-    gray: "#A0AEC0",
-    border: "#E2E8F0",
-  },
-  gradients: {
-    scanner: ["#FF6B6B", "#FFA06B"],
-    camera: ["rgba(0,0,0,0)", "rgba(0,0,0,0.3)"],
-  },
-};
-
 const ScanScreen = ({ navigation }) => {
   const [permission, requestPermission] = useCameraPermissions();
   const [barcode, setBarcode] = useState("");
   const [scanned, setScanned] = useState(false);
   const insets = useSafeAreaInsets();
 
+// verification du permision
   useEffect(() => {
     if (!permission?.granted) {
       requestPermission();
     }
   }, [permission]);
 
+// verification si le code est scanné
   const handleBarcodeScanned = ({ data }) => {
     if (!scanned) {
       setScanned(true);
@@ -59,6 +40,7 @@ const ScanScreen = ({ navigation }) => {
     }
   };
 
+// verifier si le produit exister ou non
   const checkProduct = async (barcode) => {
     try {
       const response = await axios.get("http://172.16.9.161:3000/products");
@@ -72,10 +54,10 @@ const ScanScreen = ({ navigation }) => {
       }
     } catch (error) {
       console.error("Erreur de requête API :", error);
-      Alert.alert("Erreur", "Impossible de récupérer les données du produit.");
     }
   };
 
+// écrit le code manuelement
   const handleValidate = () => {
     if (barcode.trim() === "") {
       Alert.alert("Erreur", "Veuillez entrer un code-barres.");
@@ -84,161 +66,162 @@ const ScanScreen = ({ navigation }) => {
     }
   };
 
+// réinisialisé le code du scan
   const resetScan = () => {
     setBarcode("");
     setScanned(false);
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar style="light" />
-
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Scanner</Text>
-        <Text style={styles.headerSubtitle}>Scannez vos produits</Text>
-      </View>
-
-      {/* Camera Section */}
-      <View style={styles.cameraSection}>
-        <LinearGradient
-          colors={THEME.gradients.scanner}
-          style={styles.cameraContainer}
-        >
-          <View style={styles.cameraFrame}>
-            <CameraView
-              style={styles.camera}
-              facing="back"
-              barcodeScannerSettings={{
-                barcodeTypes: ["qr", "ean13", "ean8", "upc_a", "upc_e"],
-              }}
-              onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
-            />
-            <LinearGradient
-              colors={THEME.gradients.camera}
-              style={styles.cameraOverlay}
-            >
-              <View style={styles.scanArea} />
-            </LinearGradient>
+    <LinearGradient colors={["#8DE8CF", "#B7F5AA"]} style={styles.container}>
+      <StatusBar style="dark" />
+      <View style={[styles.contentContainer, { paddingTop: insets.top }]}>
+        <View style={styles.content}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Scanner</Text>
+            <Text style={styles.headerSubtitle}>Scannez vos produits</Text>
           </View>
-        </LinearGradient>
+
+          {/* Camera Section */}
+          <View style={styles.cameraSection}>
+            <View style={styles.cameraContainer}>
+              <View style={styles.cameraFrame}>
+                <CameraView
+                  style={styles.camera}
+                  facing="back"
+                  barcodeScannerSettings={{
+                    barcodeTypes: ["qr", "ean13", "ean8", "upc_a", "upc_e"],
+                  }}
+                  onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
+                />
+                <LinearGradient
+                  colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.3)"]}
+                  style={styles.cameraOverlay}
+                >
+                  <View style={styles.scanArea} />
+                </LinearGradient>
+              </View>
+            </View>
+          </View>
+
+          {/* Manual Input Section */}
+          <View style={styles.inputSection}>
+            <Text style={styles.inputLabel}>Saisie manuelle</Text>
+            <View style={styles.inputContainer}>
+              <Ionicons
+                name="barcode-outline"
+                size={24}
+                color="#4A5568"
+                style={styles.inputIcon}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Entrez le code-barres"
+                placeholderTextColor="#4A5568"
+                value={barcode}
+                onChangeText={setBarcode}
+                keyboardType="numeric"
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.button, scanned && styles.buttonScanned]}
+              onPress={scanned ? resetScan : handleValidate}
+            >
+              <Text style={styles.buttonText}>
+                {scanned ? "Scanner à nouveau" : "Valider"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Bottom Navigation */}
+          <View style={[styles.bottomNav, { paddingBottom: insets.bottom }]}>
+            <TouchableOpacity
+              style={styles.navItem}
+              onPress={() => navigation.navigate("Scan")}
+            >
+              <Ionicons name="barcode-outline" size={24} color="#8DE8CF" />
+              <Text style={[styles.navText, { color: "#8DE8CF" }]}>
+                Scanner
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.navItem}
+              onPress={() => navigation.navigate("Products")}
+            >
+              <Ionicons name="cube-outline" size={24} color="#4A5568" />
+              <Text style={[styles.navText, { color: "#4A5568" }]}>
+                Produits
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.navItem}
+              onPress={() => navigation.navigate("Statistics")}
+            >
+              <Ionicons name="stats-chart-outline" size={24} color="#4A5568" />
+              <Text style={[styles.navText, { color: "#4A5568" }]}>Stats</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.navItem}
+              onPress={() => navigation.navigate("PDF")}
+            >
+              <Ionicons
+                name="document-text-outline"
+                size={24}
+                color="#4A5568"
+              />
+              <Text style={[styles.navText, { color: "#4A5568" }]}>
+                Rapports
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
-
-      {/* Manual Input Section */}
-      <View style={styles.inputSection}>
-        <Text style={styles.inputLabel}>Saisie manuelle</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Entrez le code-barres"
-          placeholderTextColor={THEME.colors.gray}
-          value={barcode}
-          onChangeText={setBarcode}
-          keyboardType="numeric"
-        />
-
-        <TouchableOpacity
-          style={[styles.button, scanned && styles.buttonScanned]}
-          onPress={scanned ? resetScan : handleValidate}
-        >
-          <Text style={styles.buttonText}>
-            {scanned ? "Scanner à nouveau" : "Valider"}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Bottom Navigation */}
-      <View style={[styles.bottomNav, { paddingBottom: insets.bottom }]}>
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate("Scan")}
-        >
-          <Ionicons
-            name="barcode-outline"
-            size={24}
-            color={THEME.colors.scanner}
-          />
-          <Text style={[styles.navText, { color: THEME.colors.scanner }]}>
-            Scanner
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate("Products")}
-        >
-          <Ionicons
-            name="cube-outline"
-            size={24}
-            color={THEME.colors.products}
-          />
-          <Text style={[styles.navText, { color: THEME.colors.products }]}>
-            Produits
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate("Statistics")}
-        >
-          <Ionicons
-            name="stats-chart-outline"
-            size={24}
-            color={THEME.colors.statistics}
-          />
-          <Text style={[styles.navText, { color: THEME.colors.statistics }]}>
-            Stats
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate("PDF")}
-        >
-          <Ionicons
-            name="document-text-outline"
-            size={24}
-            color={THEME.colors.reports}
-          />
-          <Text style={[styles.navText, { color: THEME.colors.reports }]}>
-            Rapports
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: THEME.colors.background,
+  },
+  contentContainer: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    marginTop: 20,
   },
   header: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: THEME.colors.surface,
+    padding: 24,
     borderBottomWidth: 1,
-    borderBottomColor: THEME.colors.border,
+    borderBottomColor: "#E2E8F0",
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: THEME.colors.text,
-    marginBottom: 4,
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#2D3748",
+    marginBottom: 8,
   },
   headerSubtitle: {
     fontSize: 16,
-    color: THEME.colors.gray,
+    color: "#4A5568",
   },
   cameraSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
+    padding: 20,
   },
   cameraContainer: {
     borderRadius: 20,
     overflow: "hidden",
     elevation: 8,
-    shadowColor: THEME.colors.primary,
+    shadowColor: "#8DE8CF",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 12,
@@ -257,45 +240,53 @@ const styles = StyleSheet.create({
   },
   scanArea: {
     width: width * 0.6,
-    height: width * 0.3,
+    height: width * 0.3
   },
   inputSection: {
     padding: 20,
+    gap: 16,
   },
   inputLabel: {
     fontSize: 16,
+    color: "#2D3748",
     fontWeight: "600",
-    color: THEME.colors.text,
-    marginBottom: 8,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F7FAFC",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+  },
+  inputIcon: {
+    padding: 12,
   },
   input: {
-    backgroundColor: THEME.colors.surface,
-    borderWidth: 1,
-    borderColor: THEME.colors.border,
-    borderRadius: 12,
-    padding: 15,
+    flex: 1,
+    color: "#2D3748",
     fontSize: 16,
-    marginBottom: 16,
+    padding: 12,
   },
   button: {
-    backgroundColor: THEME.colors.primary,
+    backgroundColor: "#8DE8CF",
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
   },
   buttonScanned: {
-    backgroundColor: THEME.colors.scanner,
+    backgroundColor: "#B7F5AA",
   },
   buttonText: {
-    color: THEME.colors.textLight,
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
   },
   bottomNav: {
     flexDirection: "row",
-    backgroundColor: THEME.colors.surface,
+    backgroundColor: "#FFFFFF",
     borderTopWidth: 1,
-    borderTopColor: THEME.colors.border,
+    borderTopColor: "#E2E8F0",
     paddingTop: 12,
     paddingHorizontal: 16,
     justifyContent: "space-between",
