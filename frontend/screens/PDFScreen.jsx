@@ -13,9 +13,11 @@ import * as Sharing from "expo-sharing";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import { LinearGradient } from "expo-linear-gradient";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const PDFScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const generatePDF = async () => {
     try {
@@ -114,29 +116,33 @@ const PDFScreen = ({ navigation }) => {
           </ScrollView>
 
           {/* navbar */}
-          <View style={styles.bottomNav}>
+          <View style={[styles.bottomNav, { paddingBottom: insets.bottom }]}>
             <TouchableOpacity
               style={styles.navItem}
               onPress={() => navigation.navigate("Scan")}
             >
-              <Ionicons name="barcode-outline" size={24} color="#2D3748" />
-              <Text style={styles.navText}>Scanner</Text>
+              <Ionicons name="barcode-outline" size={24} color="#4A5568" />
+              <Text style={[styles.navText, { color: "#4A5568" }]}>
+                Scanner
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.navItem}
               onPress={() => navigation.navigate("Products")}
             >
-              <Ionicons name="cube-outline" size={24} color="#2D3748" />
-              <Text style={styles.navText}>Produits</Text>
+              <Ionicons name="cube-outline" size={24} color="#4A5568" />
+              <Text style={[styles.navText, { color: "#4A5568" }]}>
+                Produits
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.navItem}
               onPress={() => navigation.navigate("Statistics")}
             >
-              <Ionicons name="stats-chart-outline" size={24} color="#2D3748" />
-              <Text style={styles.navText}>Stats</Text>
+              <Ionicons name="stats-chart-outline" size={24} color="#4A5568" />
+              <Text style={[styles.navText, { color: "#4A5568" }]}>Stats</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -146,9 +152,11 @@ const PDFScreen = ({ navigation }) => {
               <Ionicons
                 name="document-text-outline"
                 size={24}
-                color="#2D3748"
+                color="#8DE8CF"
               />
-              <Text style={styles.navText}>Rapports</Text>
+              <Text style={[styles.navText, { color: "#8DE8CF" }]}>
+                Rapports
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

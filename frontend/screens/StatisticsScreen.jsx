@@ -236,7 +236,7 @@ const StatisticsScreen = () => {
         </View>
       </LinearGradient>
 
-      {/* Bottom Navigation */}
+      {/* navbar */}
       <View style={[styles.bottomNav, { paddingBottom: insets.bottom }]}>
         <TouchableOpacity
           style={styles.navItem}
@@ -258,19 +258,8 @@ const StatisticsScreen = () => {
           style={styles.navItem}
           onPress={() => navigation.navigate("Statistics")}
         >
-          <LinearGradient
-            colors={["#8DE8CF", "#B7F5AA"]}
-            style={styles.activeNavItem}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <Ionicons name="stats-chart" size={24} color="#FFFFFF" />
-          </LinearGradient>
-          <Text
-            style={[styles.navText, { color: "#8DE8CF", fontWeight: "700" }]}
-          >
-            Stats
-          </Text>
+          <Ionicons name="stats-chart-outline" size={24} color="#8DE8CF" />
+          <Text style={[styles.navText, { color: "#8DE8CF" }]}>Stats</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -508,30 +497,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     justifyContent: "space-between",
     marginTop: "auto",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 5,
   },
   navItem: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    position: "relative",
-  },
-  activeNavItem: {
-    width: 48,
-    height: 48,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 24,
-    marginBottom: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 3,
   },
   navText: {
     fontSize: 12,
@@ -539,5 +509,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 });
+
 
 export default StatisticsScreen;
