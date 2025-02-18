@@ -8,23 +8,15 @@ import {
   StyleSheet,
   ActivityIndicator,
   Image,
-  Dimensions,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
-import * as Print from "expo-print";
-import * as Sharing from "expo-sharing";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-const { width } = Dimensions.get("window");
 
 const ProductsScreen = ({ navigation }) => {
-  const insets = useSafeAreaInsets();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [allProducts, setAllProducts] = useState([]);
   const [sortOrder, setSortOrder] = useState({
@@ -43,12 +35,10 @@ const ProductsScreen = ({ navigation }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        setError(null);
         const response = await axios.get("http://172.16.9.161:3000/products");
         setProducts(response.data);
         setAllProducts(response.data);
       } catch (error) {
-        setError("Erreur lors du chargement des produits");
         console.error("Erreur:", error);
       } finally {
         setLoading(false);
@@ -76,12 +66,6 @@ const ProductsScreen = ({ navigation }) => {
     }
   };
   // tri des produits
-  const getTotalQuantity = (product) => {
-    return (
-      product.stocks?.reduce((total, stock) => total + stock.quantity, 0) || 0
-    );
-  };
-
   const sortProducts = (key) => {
     const order = sortOrder[key] === "asc" ? "desc" : "asc";
 
@@ -91,70 +75,17 @@ const ProductsScreen = ({ navigation }) => {
           ? a.name.localeCompare(b.name)
           : b.name.localeCompare(a.name);
       } else if (key === "quantity") {
-        return order === "asc"
-          ? getTotalQuantity(a) - getTotalQuantity(b)
-          : getTotalQuantity(b) - getTotalQuantity(a);
-      } else {
-        return order === "asc" ? a[key] - b[key] : b[key] - a[key];
+        const quantityA = a.stocks[0]?.quantity || 0;
+        const quantityB = b.stocks[0]?.quantity || 0;
+        return order === "asc" ? quantityA - quantityB : quantityB - quantityA;
+      }
+      else if (key === "price") {
+        return order === "asc" ? a.price - b.price : b.price - a.price;
       }
     });
 
     setProducts(sortedProducts);
     setSortOrder({ ...sortOrder, [key]: order });
-  };
-  // Générer un PDF
-  const generatePDF = async () => {
-    try {
-      const htmlContent = `
-        <html>
-          <body>
-            <h1>Liste des Produits</h1>
-            <table style="width: 100%; border-collapse: collapse;">
-              <tr>
-                <th style="border: 1px solid black; padding: 8px;">Nom</th>
-                <th style="border: 1px solid black; padding: 8px;">Type</th>
-                <th style="border: 1px solid black; padding: 8px;">Prix</th>
-                <th style="border: 1px solid black; padding: 8px;">Quantité</th>
-                <th style="border: 1px solid black; padding: 8px;">Fournisseur</th>
-              </tr>
-              ${products
-                .map(
-                  (product) => `
-                <tr>
-                  <td style="border: 1px solid black; padding: 8px;">${
-                    product.name
-                  }</td>
-                  <td style="border: 1px solid black; padding: 8px;">${
-                    product.type
-                  }</td>
-                  <td style="border: 1px solid black; padding: 8px;">${
-                    product.price
-                  } DH</td>
-                  <td style="border: 1px solid black; padding: 8px;">${getTotalQuantity(
-                    product
-                  )}</td>
-                  <td style="border: 1px solid black; padding: 8px;">${
-                    product.supplier
-                  }</td>
-                </tr>
-              `
-                )
-                .join("")}
-            </table>
-          </body>
-        </html>
-      `;
-
-      const { uri } = await Print.printToFileAsync({
-        html: htmlContent,
-        base64: false,
-      });
-
-      await Sharing.shareAsync(uri);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      alert("Error generating PDF");
-    }
   };
 
   return (
@@ -163,9 +94,7 @@ const ProductsScreen = ({ navigation }) => {
       <View style={styles.contentContainer}>
         <View style={styles.header}>
           <Text style={styles.title}>Produits</Text>
-          <TouchableOpacity style={styles.pdfButton} onPress={generatePDF}>
-            <Ionicons name="document-text" size={24} color="#2D3748" />
-          </TouchableOpacity>
+          
         </View>
 
         <View style={styles.content}>
