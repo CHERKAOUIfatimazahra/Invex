@@ -135,7 +135,7 @@ const ScanScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
 
-          {/* Bottom Navigation */}
+          {/* navbar */}
           <View style={[styles.bottomNav, { paddingBottom: insets.bottom }]}>
             <TouchableOpacity
               style={styles.navItem}

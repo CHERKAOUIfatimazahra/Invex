@@ -103,7 +103,7 @@
         {
           "id": 1999,
           "name": "Gueliz B2",
-          "quantity": 20,
+          "quantity": 1,
           "localisation": {
             "city": "Marrakesh",
             "latitude": 31.628674,
@@ -131,7 +131,7 @@
         {
           "id": 1999,
           "name": "Gueliz B2",
-          "quantity": 13,
+          "quantity": 1,
           "localisation": {
             "city": "Marrakesh",
             "latitude": 31.628674,
@@ -144,7 +144,8 @@
           "warehousemanId": "1444",
           "at": "2025-02-17T08:19:28.525Z"
         }
-      ]
+      ],
+      "warehousemanId": "1444"
     }
   ],
   "warehousemans": [
