@@ -27,17 +27,14 @@ const ProductDetailScreen = ({ route }) => {
   const [quantities, setQuantities] = useState({});
   const { warehousemanId } = useContext(WarehouseContext);
 
-  // pour les couleur des quantités
   const getStockStatusColor = (quantity) => {
     if (quantity === 0) return "#E53E3E";
     if (quantity < 10) return "#FFB036";
     return "#4CD964";
   };
 
-  // update quantité du stock
   const updateStockQuantity = async (stockId, isAddition) => {
 
-    // Vérifier si la quantité est valide
     const amount = Number(quantities[stockId]);
     if (amount <= 0 || isNaN(amount)) {
       Alert.alert("Erreur", "Veuillez entrer un nombre valide supérieur à 0");
@@ -64,7 +61,6 @@ const ProductDetailScreen = ({ route }) => {
         return stock;
       });
 
-      // Mettre à jour la base de données
       await axios.patch(
         `http://172.16.9.161:3000/products/${currentProduct.id}`,
         {
@@ -73,7 +69,6 @@ const ProductDetailScreen = ({ route }) => {
         }
       );
 
-      // Mettre à jour l'interface
       setCurrentProduct({ ...currentProduct, stocks: newStocks });
       setQuantities({ ...quantities, [stockId]: "" });
     } catch (error) {
@@ -260,15 +255,15 @@ const ProductDetailScreen = ({ route }) => {
   );
 };
 
-// const DetailItem = ({ icon, label, value }) => (
-//   <View style={styles.detailItem}>
-//     <Ionicons name={icon} size={24} color="#8DE8CF" />
-//     <View style={styles.detailContent}>
-//       <Text style={styles.detailLabel}>{label}</Text>
-//       <Text style={styles.detailValue}>{value}</Text>
-//     </View>
-//   </View>
-// );
+const DetailItem = ({ icon, label, value }) => (
+  <View style={styles.detailItem}>
+    <Ionicons name={icon} size={24} color="#8DE8CF" />
+    <View style={styles.detailContent}>
+      <Text style={styles.detailLabel}>{label}</Text>
+      <Text style={styles.detailValue}>{value}</Text>
+    </View>
+  </View>
+);
 
 const styles = StyleSheet.create({
   container: {
