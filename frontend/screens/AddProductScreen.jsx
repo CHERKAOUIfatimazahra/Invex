@@ -7,8 +7,6 @@ import {
   Alert,
   StyleSheet,
   ScrollView,
-  Dimensions,
-  Platform,
 } from "react-native";
 import axios from "axios";
 import { Picker } from "@react-native-picker/picker";
@@ -23,7 +21,7 @@ const AddProductScreen = () => {
   const insets = useSafeAreaInsets();
   const { warehousemanId } = useContext(WarehouseContext);
   const [name, setName] = useState("");
-  const [type, setType] = useState("Type1");
+  const [type, setType] = useState("");
   const [price, setPrice] = useState("");
   const [supplier, setSupplier] = useState("");
   const [selectedWarehouse, setSelectedWarehouse] = useState(null);
@@ -53,7 +51,7 @@ const AddProductScreen = () => {
 
         setWarehouses(Array.from(existingWarehouses).map((w) => JSON.parse(w)));
       } catch (error) {
-        console.error("Erreur lors de la récupération des entrepôts:", error);
+        console.error("Erreur:", error);
       }
     };
 
@@ -61,6 +59,7 @@ const AddProductScreen = () => {
   }, []);
 
   const handleSubmit = async () => {
+
     if (!name || !price || !supplier || !selectedWarehouse || !stockQuantity) {
       Alert.alert("Erreur", "Veuillez remplir tous les champs obligatoires.");
       return;
@@ -152,14 +151,12 @@ const AddProductScreen = () => {
                     color="#4A5568"
                     style={styles.inputIcon}
                   />
-                  <Picker
-                    style={styles.picker}
-                    selectedValue={type}
-                    onValueChange={setType}
-                  >
-                    <Picker.Item label="Type 1" value="Type1" />
-                    <Picker.Item label="Type 2" value="Type2" />
-                  </Picker>
+                  <TextInput
+                    style={styles.input}
+                    value={type}
+                    onChangeText={setType}
+                    placeholder="Entrez le type"
+                  />
                 </View>
 
                 <Text style={styles.label}>Prix</Text>
@@ -172,7 +169,7 @@ const AddProductScreen = () => {
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder="0.00 €"
+                    placeholder="0.00 DH"
                     value={price}
                     onChangeText={setPrice}
                     keyboardType="numeric"
