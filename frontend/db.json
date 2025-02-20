@@ -103,7 +103,7 @@
         {
           "id": 1999,
           "name": "Gueliz B2",
-          "quantity": 1,
+          "quantity": 538,
           "localisation": {
             "city": "Marrakesh",
             "latitude": 31.628674,
@@ -117,7 +117,7 @@
           "at": "2025-02-14T14:32:21.147Z"
         }
       ],
-      "warehousemanId": "1444"
+      "warehousemanId": "1333"
     },
     {
       "id": "06ed",
@@ -146,6 +146,33 @@
         }
       ],
       "warehousemanId": "1444"
+    },
+    {
+      "id": "45df",
+      "name": "Test",
+      "type": "Type1",
+      "barcode": "9790123456785",
+      "price": 15,
+      "supplier": "Hp",
+      "image": "../assets/Invex__1_-removebg-preview.png",
+      "stocks": [
+        {
+          "id": 1999,
+          "name": "Gueliz B2",
+          "quantity": 100,
+          "localisation": {
+            "city": "Marrakesh",
+            "latitude": 31.628674,
+            "longitude": -7.992047
+          }
+        }
+      ],
+      "editedBy": [
+        {
+          "warehousemanId": "1444",
+          "at": "2025-02-19T09:08:20.355Z"
+        }
+      ]
     }
   ],
   "warehousemans": [
