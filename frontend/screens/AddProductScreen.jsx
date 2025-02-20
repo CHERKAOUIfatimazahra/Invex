@@ -16,6 +16,7 @@ import { useRoute } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+// import AsyncStorage, { useAsyncStorage } from "@react-native-async-storage/async-storage";
 
 const AddProductScreen = () => {
   const insets = useSafeAreaInsets();
@@ -30,6 +31,7 @@ const AddProductScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { barcode } = route.params || {};
+  // const warehousemanId = useAsyncStorage();
 
   useEffect(() => {
     const fetchWarehouses = async () => {
@@ -84,6 +86,7 @@ const AddProductScreen = () => {
       ],
       editedBy: [
         {
+          // warehousemanId: await AsyncStorage.getItem("userToken"),
           warehousemanId,
           at: new Date().toISOString(),
         },

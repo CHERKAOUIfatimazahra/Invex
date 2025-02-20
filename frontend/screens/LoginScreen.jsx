@@ -32,6 +32,17 @@ export const login = async (secretKey) => {
   }
 };
 
+// const getProducts = async () => {
+//   try {
+//     const responce = await axios.get("http://172.16.9.161:3000/products");
+//     const fetchProduct = responce.data[0, 1, 2];
+//     console.log(fetchProduct);
+//   } catch {
+//     console.log(erreur);
+//   }
+
+// }
+
 const LoginScreen = ({ setIsLoggedIn }) => {
   const navigation = useNavigation();
   const [code, setCode] = useState("");
